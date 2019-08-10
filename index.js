@@ -98,7 +98,7 @@ class Notabase {
     getBrowseableUrl(blockID) {
         return `${NOTION_BASE_URL}/${blockID.split('-').join('')}`
     }
-
+    
     parseImageUrl(url, width) {
         let rUrl
         if (url.startsWith("https://s3")) {
