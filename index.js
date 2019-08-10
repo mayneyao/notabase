@@ -9,17 +9,34 @@ const NOTION_BASE_URL = "https://www.notion.so"
 const NOTION_PROXY_API_URL = "https://notion.gine.workers.dev"
 
 
-let blockStore = {
+let blockStore = {}
+let collectionSchemaStore = {}
 
-}
 
-class Natabase {
-    constructor(token) {
+class Notabase {
+    constructor(token, ) {
         this.token = token
         if (token) {
-            this.reqeust = axios
+            this.reqeust = {
+                async post(url, data, { header }) {
+                    let r = await fetch(`${url}?body=${JSON.stringify(data)}`, {
+                        method: 'GET',
+                        headers: header
+                    })
+                    return await r.json()
+                }
+            }
+            // fixme 
         } else {
-            this.reqeust = axios
+            this.reqeust = {
+                async post(url, data, { header }) {
+                    let r = await fetch(`${url}?body=${JSON.stringify(data)}`, {
+                        method: 'GET',
+                        headers: header
+                    })
+                    return await r.json()
+                }
+            }
         }
     }
 
@@ -41,14 +58,15 @@ class Natabase {
 
     async getRecordValues(blockIds, collectionIds) {
         let requestsIds = [...blockIds.map(item => ({ "table": "block", "id": item })), ...collectionIds.map(item => ({ "table": "collection", "id": item }))]
-        let res = await this.reqeust.post(`${NOTION_PROXY_API_URL}/api/v3/getRecordValues`,
+        console.log(`>>>> getRecordValues:${requestsIds}`)
+        let data = await this.reqeust.post(`${NOTION_PROXY_API_URL}/api/v3/getRecordValues`,
             {
                 requests: requestsIds
             },
             {
                 header: { 'content-type': 'application/json;charset=UTF-8' }
             })
-        return res.data.results
+        return data.results
     }
 
     getBlockHashId(blockId) {
@@ -67,12 +85,13 @@ class Natabase {
     }
 
     async getPageCollectionId(pageId) {
-        let res = await this.reqeust.post(`${NOTION_PROXY_API_URL}/api/v3/loadPageChunk`,
+        console.log(`>>>> getPageChunk:${pageId}`)
+        let data = await this.reqeust.post(`${NOTION_PROXY_API_URL}/api/v3/loadPageChunk`,
             { "pageId": this.getFullBlockId(pageId), "limit": 50, "cursor": { "stack": [] }, "chunkNumber": 0, "verticalColumns": false },
             {
                 header: { 'content-type': 'application/json;charset=UTF-8' }
             })
-        let collectionId = Object.entries(res.data.recordMap.collection)[0][0]
+        let collectionId = Object.entries(data.recordMap.collection)[0][0]
         return collectionId
     }
 
@@ -100,36 +119,19 @@ class Natabase {
 
 
     async fetchCollectionData(collectionId, collectionViewId) {
-        let res = await this.reqeust.post(`${NOTION_PROXY_API_URL}/api/v3/queryCollection`, {
+
+        let data = await this.reqeust.post(`${NOTION_PROXY_API_URL}/api/v3/queryCollection`, {
             collectionId,
             collectionViewId,
             loader: { type: "table" }
         }, {
                 header: { 'content-type': 'application/json;charset=UTF-8' }
             })
-
-
+        console.log(`>>>> queryCollection:${collectionId}`)
         // prefetch relation  data 
-        let schema = res.data.recordMap.collection[collectionId].value.schema
-        let relationCollectionIds = []
-        Object.entries(schema).map(item => {
-            let [key, v] = item
-            //|| v.type === 'rollup'
-            if (v.type === 'relation') {
-                if (v.collection_id) {
-                    relationCollectionIds.push(v.collection_id)
-                }
-            }
-        })
-
-        let relationCollectionData = await this.getRecordValues([], relationCollectionIds)
-        let relationMap = {}
-
-        relationCollectionData.map(item => {
-            relationMap[item.value.id] = item.value
-        })
-
-        return new Collection(collectionId, collectionViewId, res.data, relationMap)
+        let schema = data.recordMap.collection[collectionId].value.schema
+        collectionSchemaStore[collectionId] = schema
+        return new Collection(collectionId, collectionViewId, data)
     }
     async _fetch(url) {
         let [base, params] = url.split('?')
@@ -158,11 +160,10 @@ class Natabase {
     }
 }
 class Collection {
-    constructor(collectionId, collectionViewId, rawData, relationMap) {
+    constructor(collectionId, collectionViewId, rawData) {
         this.collectionId = collectionId
         this.collectionViewId = collectionViewId
         this.rawData = rawData
-        this.relationMap = relationMap
 
         this.schema = rawData.recordMap.collection[collectionId].value.schema
         this.total = rawData.result.total
@@ -213,7 +214,7 @@ class Collection {
                         } else {
                             const { key, type, collection_id } = propsKeyMap[property]
                             let res
-                            let rawValue = target.properties[key]
+                            let rawValue = target.properties ? target.properties[key] : false
                             if (rawValue) {
                                 switch (type) {
                                     case 'title':
@@ -227,21 +228,16 @@ class Collection {
                                         res = rawValue[0][0].split(',')
                                         break
                                     case 'file':
-                                        let r = rawValue.filter(item => {
+                                        res = rawValue.filter(item => {
                                             let content = item[1]
                                             return Boolean(content)
                                         }).map(item => {
                                             return item[1][0][1]
                                         })
-                                        if (r.length === 1) {
-                                            res = r[0]
-                                        } else {
-                                            res = r
-                                        }
                                         break
                                     case 'relation':
                                         res = rawValue.filter(item => item.length > 1).map(item => {
-                                            let _schema = this.relationMap[collection_id].schema
+                                            let _schema = collectionSchemaStore[collection_id]
                                             let _blockId = item[1][0][1]
                                             return this.makeRow(_blockId, _schema)
                                         })
@@ -255,13 +251,20 @@ class Collection {
                             }
 
                             return res
+                            // if (res instanceof Array && res.length === 1) {
+                            //     return res[0]
+                            // } else {
+                            //     return res
+                            // }
                         }
                     } else {
                         return undefined
                     }
                 }
             }
-            return new Proxy(rowData, handlers)
+            let proxy = new Proxy(rowData, handlers)
+            proxy.toString = Function.prototype.toString.bind(rowData)
+            return proxy
         }
     }
 
@@ -271,26 +274,4 @@ class Collection {
     }
 }
 
-
-// let nb = new Natabase()
-
-// t = async () => {
-//     let db = await nb.fetch({
-//         songs: "https://www.notion.so/2628769120ad41d998ec068d6e2eb410?v=e8e69ac68a8d483792c54541e4d8ba72",
-//         albums: "https://www.notion.so/15f1759f38a34fedaa79262812b707f0?v=b385656739214101b2b8a159092a52e8",
-//         artists: "https://www.notion.so/31b8544ffb034964b1aa56bfa78497c1?v=1d9cbfcd279d4534964acdd374c9824e"
-//     })
-
-//     // console.log(db.songs.rows.find(item => item.title === '风衣').album[0].Name)
-//     // 孙燕姿No. 13作品：跳舞的梵谷
-
-//     let song = db.songs.rows.find(item => item.title === "Tonight, I Feel Close To You")
-//     song.artist.map(artist => {
-//         console.log(artist.Name)
-//     })
-//     // 倉木麻衣
-//     // 孙燕姿
-// }
-// t()
-
-export { Natabase }
+module.exports = Notabase
