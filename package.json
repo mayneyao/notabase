@@ -1,0 +1,23 @@
+{
+  "name": "natabase",
+  "version": "0.4.2",
+  "description": "API Wrapper For Notion's Database",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mayneyao/Natabase.git"
+  },
+  "author": "Mayne",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mayneyao/Natabase/issues"
+  },
+  "homepage": "https://github.com/mayneyao/Natabase#readme",
+  "dependencies": {
+    "axios": "^0.19.0",
+    "dayjs": "^1.8.15"
+  }
+}
