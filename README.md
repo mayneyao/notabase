@@ -1,2 +1,2 @@
-# Natabase
-database base on Notion.so
+# Notabase
+API Wrapper For Notion's Database
