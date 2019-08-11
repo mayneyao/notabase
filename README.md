@@ -35,11 +35,11 @@ console.log(`${song.tile}`)
 // get artist's name of the song (related props)
 console.log(`${song.artist[0].Name}`) // a song maybe has two or more artists
 
-// search song by tile
-let aSong = rows.find(song=> song.title === "Bad Guy")
+// search song by title in song's table
+let aSong = allSongs.find(song=> song.title === "Bad Guy")
 
 // search all song by artist's name in song's table
-let aSong = rows.find(song=> song.artist[0].name === "someone")
+let aSong = allSongs.find(song=> song.artist[0].name === "someone")
 // search all song by artist's name in artist's table
 aSong = db.artists.rows.find(a=> a.name === "someone").songs
 
