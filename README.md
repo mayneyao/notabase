@@ -39,9 +39,9 @@ console.log(`${song.artist[0].Name}`) // a song maybe has two or more artists
 let aSong = allSongs.find(song=> song.title === "Bad Guy")
 
 // search all song by artist's name in song's table
-let aSong = allSongs.find(song=> song.artist[0].name === "someone")
+let songByArtistName = allSongs.filter(song=> song.artist[0].name === "someone")
 // search all song by artist's name in artist's table
-aSong = db.artists.rows.find(a=> a.name === "someone").songs
+songByArtistName = db.artists.rows.filter(a=> a.name === "someone").songs
 
 
 ```
