@@ -218,6 +218,7 @@ class Collection {
                             if (rawValue) {
                                 switch (type) {
                                     case 'title':
+                                    case 'url':
                                     case 'number':
                                         res = rawValue[0][0]
                                         break
