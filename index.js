@@ -84,7 +84,7 @@ class Notabase {
         }
     }
 
-    async getPageCollectionId(pageId) {
+    async getPageCollectionInfo(pageId) {
         console.log(`>>>> getPageChunk:${pageId}`)
         let data = await this.reqeust.post(`${NOTION_PROXY_API_URL}/api/v3/loadPageChunk`,
             { "pageId": this.getFullBlockId(pageId), "limit": 50, "cursor": { "stack": [] }, "chunkNumber": 0, "verticalColumns": false },
@@ -92,13 +92,14 @@ class Notabase {
                 header: { 'content-type': 'application/json;charset=UTF-8' }
             })
         let collectionId = Object.entries(data.recordMap.collection)[0][0]
-        return collectionId
+        let collectionViewId = Object.entries(data.recordMap.collection_view)[0][0]
+        return [collectionId, collectionViewId]
     }
 
     getBrowseableUrl(blockID) {
         return `${NOTION_BASE_URL}/${blockID.split('-').join('')}`
     }
-    
+
     parseImageUrl(url, width) {
         let rUrl
         if (url.startsWith("https://s3")) {
@@ -133,13 +134,18 @@ class Notabase {
         collectionSchemaStore[collectionId] = schema
         return new Collection(collectionId, collectionViewId, data)
     }
-    async _fetch(url) {
-        let [base, params] = url.split('?')
-        let p = new URLSearchParams(params)
-        let baseUrlList = base.split('/')
-        let collectionId = await this.getPageCollectionId(baseUrlList[baseUrlList.length - 1])
-        // console.log(collectionId)
-        let collectionViewId = this.getFullBlockId(p.get('v'))
+    async _fetch(urlOrPageId) {
+        let collectionId, collectionViewId
+        if (urlOrPageId.match("^[a-zA-Z0-9-]+$")) {
+            // pageId with '-' split
+            [collectionId, collectionViewId] = await this.getPageCollectionInfo(this.getBlockHashId(urlOrPageId))
+        } else if (urlOrPageId.startsWith("http")) {
+            // url 
+            let [base, params] = urlOrPageId.split('?')
+            let p = new URLSearchParams(params)
+            let baseUrlList = base.split('/'); // 这里需要添加分号，否则编译出错。 参见 https://www.zhihu.com/question/20298345/answer/49551142
+            [collectionId, collectionViewId] = await this.getPageCollectionInfo(baseUrlList[baseUrlList.length - 1])
+        }
         let r = await this.fetchCollectionData(collectionId, collectionViewId)
         return r
     }
