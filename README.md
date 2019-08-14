@@ -1,4 +1,4 @@
-# Notabase
+# Notabase (WIP)
 API Wrapper For Notion's Database
 
 ## Getting Started
