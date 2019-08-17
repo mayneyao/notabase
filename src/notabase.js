@@ -1,10 +1,3 @@
-
-const axios = require('axios')
-const dayjs = require('dayjs')
-// const { URLSearchParams } = require('url')
-const parse = require('url').parse
-
-
 const NOTION_BASE_URL = "https://www.notion.so"
 const NOTION_PROXY_API_URL = "https://notion.gine.workers.dev"
 
@@ -14,12 +7,13 @@ let collectionSchemaStore = {}
 
 
 class Notabase {
-    constructor(options) {
-        const { proxy: { url, authCode }, token } = options
+    constructor(options = {}) {
+        const { proxy, token } = options
         // proxy > browser env + cloudflare worker
         // token > node env
 
-        if (url) {
+        if (proxy) {
+            const { url, authCode } = proxy
             // browser env
             this.url = url // cloudflare worker url
             // auth code for cloudflare worker (nobody knows but you ,same to the code that config in cf-worker)
@@ -42,6 +36,7 @@ class Notabase {
             // node env
             this.token = token
             let tkHeader = token ? { 'cookies': token } : {}
+            const fetch = require("node-fetch")
             this.reqeust = {
                 async post(path, data) {
                     let r = await fetch(`${NOTION_BASE_URL}${path}`,
@@ -60,7 +55,13 @@ class Notabase {
     }
 
     getUrlBloackId(url) {
-        let pUrl = parse(url)
+        let pUrl
+        if (!process.browser) {
+            const parse = require('url').parse
+            pUrl = parse(url)
+        } else {
+            pUrl = new URL(url)
+        }
         let pathList = pUrl.pathname.split('/')
         let blockID = pathList[pathList.length - 1]
         return blockID
@@ -102,7 +103,7 @@ class Notabase {
 
     async getPageCollectionInfo(pageId) {
         console.log(`>>>> getPageChunk:${pageId}`)
-        let data = await this.reqeust.post(`${NOTION_PROXY_API_URL}/api/v3/loadPageChunk`,
+        let data = await this.reqeust.post(`/api/v3/loadPageChunk`,
             { "pageId": this.getFullBlockId(pageId), "limit": 50, "cursor": { "stack": [] }, "chunkNumber": 0, "verticalColumns": false }
         )
         let collectionId = Object.entries(data.recordMap.collection)[0][0]
@@ -154,7 +155,12 @@ class Notabase {
         } else if (urlOrPageId.startsWith("http")) {
             // url 
             let [base, params] = urlOrPageId.split('?')
+
+            if (!process.browser) {
+                const { URLSearchParams } = require('url')
+            }
             let p = new URLSearchParams(params)
+
             let baseUrlList = base.split('/'); // 这里需要添加分号，否则编译出错。 参见 https://www.zhihu.com/question/20298345/answer/49551142
             [collectionId, collectionViewId] = await this.getPageCollectionInfo(baseUrlList[baseUrlList.length - 1])
         }

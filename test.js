@@ -1,5 +1,7 @@
-const Notabase = require('./index')
+const Notabase = require('././src/notabase')
 
+
+// node env
 let nb = new Notabase()
 
 t = async () => {
