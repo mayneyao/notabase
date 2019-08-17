@@ -1,3 +1,6 @@
+const token_v2 = undefined
+const cookies = `token_v2=${token_v2}`
+
 addEventListener('fetch', event => {
     event.respondWith(fetchAndApply(event.request))
 })
@@ -5,7 +8,7 @@ addEventListener('fetch', event => {
 const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, HEAD, POST,PUT, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Headers": "Content-Type,auth-code",
 }
 
 function handleOptions(request) {
@@ -39,10 +42,12 @@ async function fetchAndApply(request) {
         console.log("get rewrite app.js")
     } else if ((url.pathname.startsWith("/api"))) {
 
-        // 因为 PWA SW 中服务缓存 POST 请求，但是 notion 获取数据全是用的 POST 请求。这就很尴尬。。。
+        // 因为 SW 中无法缓存 POST 请求，但是 notion 获取数据全是用的 POST 请求
         // 解决办法是把 POST 请求中的 body 转字符串，放在 url的查询参数中，在这里转换为 POST 请求
 
         body = url.searchParams.get("body")
+
+        // todo 针对 CUD 请求添加 cookies
         response = await fetch(`https://www.notion.so${url.pathname}`, {
             body: body, // must match 'Content-Type' header
             headers: {
