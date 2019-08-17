@@ -1,5 +1,4 @@
 const NOTION_BASE_URL = "https://www.notion.so"
-const NOTION_PROXY_API_URL = "https://notion.gine.workers.dev"
 
 
 let blockStore = {}
@@ -35,7 +34,7 @@ class Notabase {
         } else {
             // node env
             this.token = token
-            let tkHeader = token ? { 'cookies': token } : {}
+            let tkHeader = token ? { 'cookie': `token_v2=${token}` } : {}
             const fetch = require("node-fetch")
             this.reqeust = {
                 async post(path, data) {
@@ -43,7 +42,10 @@ class Notabase {
                         {
                             method: 'POST',
                             headers: {
+                                'accept-encoding': 'gzip, deflate',
+                                'content-length': JSON.stringify(data).length,
                                 'content-type': 'application/json;charset=UTF-8',
+                                'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36',
                                 ...tkHeader
                             },
                             body: JSON.stringify(data)

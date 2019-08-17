@@ -1,5 +1,5 @@
 const token_v2 = undefined
-const cookies = `token_v2=${token_v2}`
+const cookie = `token_v2=${token_v2}`
 const AUTH_CODE = 'nobody knows but you'
 
 
@@ -54,9 +54,10 @@ async function fetchAndApply(request) {
 
         if (authCode && authCode === AUTH_CODE && token_v2) {
             // 本人操作
-            addHeader = { cookies }
+            // cookie NOT cookies
+            addHeader = { cookie }
         }
-        // todo 针对 CUD 请求添加 cookies
+        // todo 针对 CUD 请求添加 cookie
         response = await fetch(`https://www.notion.so${url.pathname}`, {
             body: body, // must match 'Content-Type' header
             headers: {
