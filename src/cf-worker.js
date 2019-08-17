@@ -1,5 +1,7 @@
 const token_v2 = undefined
 const cookies = `token_v2=${token_v2}`
+const AUTH_CODE = 'nobody knows but you'
+
 
 addEventListener('fetch', event => {
     event.respondWith(fetchAndApply(event.request))
@@ -47,12 +49,20 @@ async function fetchAndApply(request) {
 
         body = url.searchParams.get("body")
 
+        let addHeader = {}
+        let authCode = request.headers.get('auth-code')
+
+        if (authCode && authCode === AUTH_CODE && token_v2) {
+            // 本人操作
+            addHeader = { cookies }
+        }
         // todo 针对 CUD 请求添加 cookies
         response = await fetch(`https://www.notion.so${url.pathname}`, {
             body: body, // must match 'Content-Type' header
             headers: {
                 'content-type': 'application/json;charset=UTF-8',
-                'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36'
+                'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36',
+                ...addHeader
             },
             method: "POST", // *GET, POST, PUT, DELETE, etc.
         })

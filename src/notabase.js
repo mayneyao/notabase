@@ -26,7 +26,7 @@ class Notabase {
                         method: 'GET',
                         headers: {
                             'content-type': 'application/json;charset=UTF-8',
-                            'auth-code': authCode, // custom header
+                            'x-auth-code': authCode, // custom header
                         }
                     })
                     return await r.json()
