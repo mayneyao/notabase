@@ -22,11 +22,11 @@ class Notabase {
 
             this.reqeust = {
                 async post(path, data) {
-                    let r = await fetch(`${this.url}${path}?body=${JSON.stringify(data)}`, {
+                    let r = await fetch(`${url}${path}?body=${JSON.stringify(data)}`, {
                         method: 'GET',
                         headers: {
                             'content-type': 'application/json;charset=UTF-8',
-                            'auth-code': this.authCode, // custom header
+                            'auth-code': authCode, // custom header
                         }
                     })
                     return await r.json()
