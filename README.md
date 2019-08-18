@@ -16,14 +16,18 @@ yarn add notabase
 import Notabase from 'notabase'
 
 // node env
+
+// just Read public data
 let nb = new Notabase()
 
-// with token
+// CRUD support
 let nb = new Notabase({
   token: <token_v2>
 })
 
 // browser env
+// without authCode Read public data
+// with authCode CRUD support
 let nb = new Notabase({
   proxy: {
     url: <cloudflare worker url>,
