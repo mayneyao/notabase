@@ -14,7 +14,23 @@ yarn add notabase
 
 ``` js
 import Notabase from 'notabase'
+
+// node env
 let nb = new Notabase()
+
+// with token
+let nb = new Notabase({
+  token: <token_v2>
+})
+
+// browser env
+let nb = new Notabase({
+  proxy: {
+    url: <cloudflare worker url>,
+    authCode: <>
+  }
+})
+ 
 
 // get my music data
 let db = await nb.fetch({
