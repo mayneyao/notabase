@@ -123,38 +123,52 @@ export default class Collection {
                             case 'text':
                             case 'url':
                             case 'number':
-                                newV = [value]
+                                newV = [[value]]
                                 break
                             case 'checkbox':
-                                newV = value ? ['Yes'] : ['No']
+                                newV = value ? [['Yes']] : [['No']]
                                 break
                             case 'multi_select':
                                 if (value instanceof Array) {
-                                    newV = [value.join(',')]
+                                    newV = [[value.join(',')]]
                                 }
                                 break
                             case 'relation':
                                 // check value type , should be Row
-                                if (value instanceof Row) {
-                                    if (schema[key].collection_id === value.parent_id && value.parent_table === "collection") {
-                                        newV = ["‣", [["p", value.id]]]
+                                if (value instanceof Array) {
+                                    if (value.length === 1 && value[0] instanceof Row) {
+                                        newV = [["‣", [["p", value.id]]]]
+                                    } else if (value.length === 0) {
+                                        newV = []
                                     } else {
-                                        throw Error()
+                                        newV = value.filter(v => v instanceof Row).reduce((a, b, index) => {
+                                            if (index === 1) {
+                                                return [["‣", [["p", a.id]]]].concat([
+                                                    [","],
+                                                    ["‣", [["p", b.id]]]
+                                                ])
+                                            } else {
+                                                return a.concat([
+                                                    [","],
+                                                    ["‣", [["p", b.id]]]
+                                                ])
+                                            }
+                                        })
                                     }
-                                } else if (isPageId(value)) {
-                                    // fixme  need check
-                                    newV = ["‣", [["p", value]]]
-                                }else{
+                                    // fixme check (schema[key].collection_id === value.parent_id && value.parent_table === "collection")
+                                    // throw Error()
+                                }
+                                else {
                                     throw Error()
                                 }
                                 break
                             default:
-                                newV = [value]
+                                newV = [[value]]
                         }
 
                         let postData = {
                             "operations": [
-                                { "id": target.id, "table": "block", "path": ["properties", key], "command": "set", "args": [newV] },
+                                { "id": target.id, "table": "block", "path": ["properties", key], "command": "set", "args": newV },
                                 { "id": target.id, "table": "block", "path": [], "command": "update", "args": { "last_edited_time": (new Date()).getTime() } }
                             ]
                         }
