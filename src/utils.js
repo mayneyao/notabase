@@ -22,7 +22,7 @@ const getFullBlockId = (blockId) => {
 const getBrowseableUrl = (blockID) => {
     return `${NOTION_BASE_URL}/${blockID.split('-').join('')}`
 }
-const getUrlBlockId = (url) => {
+const getUrlPageId = (url) => {
     let pUrl
     if (!process.browser) {
         const parse = require('url').parse
@@ -31,8 +31,8 @@ const getUrlBlockId = (url) => {
         pUrl = new URL(url)
     }
     let pathList = pUrl.pathname.split('/')
-    let blockID = pathList[pathList.length - 1]
-    return blockID
+    let pagId = pathList[pathList.length - 1]
+    return pagId
 }
 const parseImageUrl = (url, width) => {
     let rUrl
@@ -52,4 +52,4 @@ const parseImageUrl = (url, width) => {
     }
 }
 
-module.exports = { isPageId, getBlockHashId, getFullBlockId, getBrowseableUrl, getUrlBlockId, parseImageUrl }
+module.exports = { isPageId, getBlockHashId, getFullBlockId, getBrowseableUrl, getUrlPageId, parseImageUrl }

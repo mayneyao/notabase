@@ -1,5 +1,5 @@
 import Collection from './collection'
-import { getBlockHashId, getFullBlockId } from './utils'
+import { getBlockHashId, getFullBlockId, getUrlPageId } from './utils'
 
 
 const NOTION_BASE_URL = "https://www.notion.so"
@@ -8,6 +8,7 @@ export default class Notabase {
     constructor(options = {}) {
         this.blockStore = {}
         this.collectionSchemaStore = {}
+        this.collectionStore = {}
         const { proxy, token } = options
         // proxy > browser env + cloudflare worker
         // token > node env
@@ -113,28 +114,34 @@ export default class Notabase {
         this.collectionSchemaStore[collectionId] = schema
         return new Collection(collectionId, collectionViewId, data, this)
     }
-    async _fetch(urlOrPageId) {
-        let collectionId, collectionViewId
+    async fetch(urlOrPageId) {
+        let collectionId, collectionViewId, pageId
         if (urlOrPageId.match("^[a-zA-Z0-9-]+$")) {
             // pageId with '-' split
-            [collectionId, collectionViewId] = await this.getPageCollectionInfo(getBlockHashId(urlOrPageId))
+            pageId = getBlockHashId(urlOrPageId)
+
+            if (pageId && pageId in this.collectionStore) {
+                return this.collectionStore[pageId]
+            } else {
+                [collectionId, collectionViewId] = await this.getPageCollectionInfo(getBlockHashId(urlOrPageId))
+            }
         } else if (urlOrPageId.startsWith("http")) {
             // url 
-            let [base, params] = urlOrPageId.split('?')
-
-            if (!process.browser) {
-                const { URLSearchParams } = require('url')
+            pageId = getUrlPageId(urlOrPageId)
+            if (pageId && pageId in this.collectionStore) {
+                return this.collectionStore[pageId]
+            } else {
+                let [base, params] = urlOrPageId.split('?')
+                let baseUrlList = base.split('/'); // 这里需要添加分号，否则编译出错。 参见 https://www.zhihu.com/question/20298345/answer/49551142
+                [collectionId, collectionViewId] = await this.getPageCollectionInfo(baseUrlList[baseUrlList.length - 1])
             }
-            let p = new URLSearchParams(params)
-
-            let baseUrlList = base.split('/'); // 这里需要添加分号，否则编译出错。 参见 https://www.zhihu.com/question/20298345/answer/49551142
-            [collectionId, collectionViewId] = await this.getPageCollectionInfo(baseUrlList[baseUrlList.length - 1])
         }
         let r = await this.fetchCollectionData(collectionId, collectionViewId)
+        this.collectionStore[pageId] = r
         return r
     }
 
-    async fetch(dbMap) {
+    async fetchAll(dbMap) {
         let db = {}
         let requests = Object.entries(dbMap).map(item => {
             let [tableName, url] = item
