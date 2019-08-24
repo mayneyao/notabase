@@ -1,7 +1,55 @@
+const NOTION_BASE_URL = "https://www.notion.so"
+
 
 const isPageId = (text) => {
     let re = new RegExp('^[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}$')
     return text.length === 36 && re.test(text)
 }
+const getBlockHashId = (blockId) => {
+    return blockId.split('-').join('')
+}
+const getFullBlockId = (blockId) => {
+    if (blockId.match("^[a-zA-Z0-9]+$")) {
+        return blockId.substr(0, 8) + "-"
+            + blockId.substr(8, 4) + "-"
+            + blockId.substr(12, 4) + "-"
+            + blockId.substr(16, 4) + "-"
+            + blockId.substr(20, 32)
+    } else {
+        return blockId
+    }
+}
+const getBrowseableUrl = (blockID) => {
+    return `${NOTION_BASE_URL}/${blockID.split('-').join('')}`
+}
+const getUrlBlockId = (url) => {
+    let pUrl
+    if (!process.browser) {
+        const parse = require('url').parse
+        pUrl = parse(url)
+    } else {
+        pUrl = new URL(url)
+    }
+    let pathList = pUrl.pathname.split('/')
+    let blockID = pathList[pathList.length - 1]
+    return blockID
+}
+const parseImageUrl = (url, width) => {
+    let rUrl
+    if (url.startsWith("https://s3")) {
+        let [parsedOriginUrl] = url.split("?")
+        rUrl = `${NOTION_BASE_URL}/image/${encodeURIComponent(parsedOriginUrl).replace("s3.us-west", "s3-us-west")}`
+    } else if (url.startsWith("/image")) {
+        rUrl = `${NOTION_BASE_URL}${url}`
+    } else {
+        rUrl = url
+    }
 
-module.exports = { isPageId }
+    if (width) {
+        return `${rUrl}?width=${width}`
+    } else {
+        return rUrl
+    }
+}
+
+module.exports = { isPageId, getBlockHashId, getFullBlockId, getBrowseableUrl, getUrlBlockId, parseImageUrl }

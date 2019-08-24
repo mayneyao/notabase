@@ -1,4 +1,5 @@
 import Collection from './collection'
+import { getBlockHashId, getFullBlockId } from './utils'
 
 
 const NOTION_BASE_URL = "https://www.notion.so"
@@ -59,25 +60,12 @@ export default class Notabase {
         }
     }
 
-    getUrlBloackId(url) {
-        let pUrl
-        if (!process.browser) {
-            const parse = require('url').parse
-            pUrl = parse(url)
-        } else {
-            pUrl = new URL(url)
-        }
-        let pathList = pUrl.pathname.split('/')
-        let blockID = pathList[pathList.length - 1]
-        return blockID
-    }
-
 
     async getBrowseableUrlByCollectionPageId(pageId) {
         let r = await this.getRecordValues([pageId], [])
         let viewId = r[0].value[pageId].view_ids[0]
 
-        let browseableUrl = `${NOTION_BASE_URL}${this.getBlockHashId(pageId)}?v=${this.getBlockHashId(viewId)}`
+        let browseableUrl = `${NOTION_BASE_URL}${getBlockHashId(pageId)}?v=${getBlockHashId(viewId)}`
         return browseableUrl
     }
 
@@ -91,60 +79,33 @@ export default class Notabase {
         return data.results
     }
 
-    getBlockHashId(blockId) {
-        return blockId.split('-').join('')
+    async loadPageChunk(pageId) {
+        let data = await this.reqeust.post(`/api/v3/loadPageChunk`,
+            { "pageId": getFullBlockId(pageId), "limit": 50, "cursor": { "stack": [] }, "chunkNumber": 0, "verticalColumns": false }
+        )
     }
-    getFullBlockId(blockId) {
-        if (blockId.match("^[a-zA-Z0-9]+$")) {
-            return blockId.substr(0, 8) + "-"
-                + blockId.substr(8, 4) + "-"
-                + blockId.substr(12, 4) + "-"
-                + blockId.substr(16, 4) + "-"
-                + blockId.substr(20, 32)
-        } else {
-            return blockId
-        }
-    }
-
     async getPageCollectionInfo(pageId) {
         console.log(`>>>> getPageChunk:${pageId}`)
         let data = await this.reqeust.post(`/api/v3/loadPageChunk`,
-            { "pageId": this.getFullBlockId(pageId), "limit": 50, "cursor": { "stack": [] }, "chunkNumber": 0, "verticalColumns": false }
+            { "pageId": getFullBlockId(pageId), "limit": 50, "cursor": { "stack": [] }, "chunkNumber": 0, "verticalColumns": false }
         )
         let collectionId = Object.entries(data.recordMap.collection)[0][0]
         let collectionViewId = Object.entries(data.recordMap.collection_view)[0][0]
         return [collectionId, collectionViewId]
     }
 
-    getBrowseableUrl(blockID) {
-        return `${NOTION_BASE_URL}/${blockID.split('-').join('')}`
-    }
-
-    parseImageUrl(url, width) {
-        let rUrl
-        if (url.startsWith("https://s3")) {
-            let [parsedOriginUrl] = url.split("?")
-            rUrl = `${NOTION_BASE_URL}/image/${encodeURIComponent(parsedOriginUrl).replace("s3.us-west", "s3-us-west")}`
-        } else if (url.startsWith("/image")) {
-            rUrl = `${NOTION_BASE_URL}${url}`
-        } else {
-            rUrl = url
-        }
-
-        if (width) {
-            return `${rUrl}?width=${width}`
-        } else {
-            return rUrl
-        }
-    }
-
-
     async fetchCollectionData(collectionId, collectionViewId) {
 
         let data = await this.reqeust.post(`/api/v3/queryCollection`, {
             collectionId,
             collectionViewId,
-            loader: { type: "table" }
+            loader: {
+                "type": "table",
+                "limit": 1000,
+                "userTimeZone": "Asia/Shanghai",
+                "userLocale": "zh-tw",
+                "loadContentCover": true
+            }
         })
         console.log(`>>>> queryCollection:${collectionId}`)
         // prefetch relation  data 
@@ -156,7 +117,7 @@ export default class Notabase {
         let collectionId, collectionViewId
         if (urlOrPageId.match("^[a-zA-Z0-9-]+$")) {
             // pageId with '-' split
-            [collectionId, collectionViewId] = await this.getPageCollectionInfo(this.getBlockHashId(urlOrPageId))
+            [collectionId, collectionViewId] = await this.getPageCollectionInfo(getBlockHashId(urlOrPageId))
         } else if (urlOrPageId.startsWith("http")) {
             // url 
             let [base, params] = urlOrPageId.split('?')
