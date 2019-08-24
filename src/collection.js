@@ -137,7 +137,7 @@ export default class Collection {
                                 // check value type , should be Row
                                 if (value instanceof Array) {
                                     if (value.length === 1 && value[0] instanceof Row) {
-                                        newV = [["‣", [["p", value.id]]]]
+                                        newV = [["‣", [["p", value[0].id]]]]
                                     } else if (value.length === 0) {
                                         newV = []
                                     } else {
