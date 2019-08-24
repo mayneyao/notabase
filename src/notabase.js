@@ -146,7 +146,7 @@ export default class Notabase {
         let requests = Object.entries(dbMap).map(item => {
             let [tableName, url] = item
             db[tableName] = {}
-            return this._fetch(url)
+            return this.fetch(url)
         })
         let res = await Promise.all(requests)
         Object.entries(dbMap).map((item, index) => {
