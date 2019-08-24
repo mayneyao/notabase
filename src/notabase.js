@@ -18,7 +18,6 @@ class Notabase {
             // auth code for cloudflare worker (nobody knows but you ,same to the code that config in cf-worker)
             // without authCode you can only retrieve and cannot creat/update/delete
             this.authCode = authCode
-
             this.reqeust = {
                 async post(path, data) {
                     let r = await fetch(`${url}${path}?body=${JSON.stringify(data)}`, {
@@ -32,10 +31,13 @@ class Notabase {
                 }
             }
         } else {
-            // node env
+            // token node env 
             this.token = token
             let tkHeader = token ? { 'cookie': `token_v2=${token}` } : {}
             const fetch = require("node-fetch")
+
+            // non-token browse ext env
+            let credentials = !token ? { credentials: 'include' } : {}
             this.reqeust = {
                 async post(path, data) {
                     let r = await fetch(`${NOTION_BASE_URL}${path}`,
@@ -48,7 +50,8 @@ class Notabase {
                                 'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36',
                                 ...tkHeader
                             },
-                            body: JSON.stringify(data)
+                            body: JSON.stringify(data),
+                            ...credentials
                         })
                     return await r.json()
                 }
@@ -147,7 +150,7 @@ class Notabase {
         // prefetch relation  data 
         let schema = data.recordMap.collection[collectionId].value.schema
         collectionSchemaStore[collectionId] = schema
-        return new Collection(collectionId, collectionViewId, data)
+        return new Collection(collectionId, collectionViewId, data, this)
     }
     async _fetch(urlOrPageId) {
         let collectionId, collectionViewId
@@ -186,10 +189,11 @@ class Notabase {
     }
 }
 class Collection {
-    constructor(collectionId, collectionViewId, rawData) {
+    constructor(collectionId, collectionViewId, rawData, client) {
         this.collectionId = collectionId
         this.collectionViewId = collectionViewId
         this.rawData = rawData
+        this.client = client
 
         this.schema = rawData.recordMap.collection[collectionId].value.schema
         this.total = rawData.result.total
@@ -234,7 +238,10 @@ class Collection {
         if (rowData) {
             let handlers = {
                 get: (target, property) => {
-                    if (props.indexOf(property) > -1) {
+                    if (target.hasOwnProperty(property)) {
+                        return target[property]
+                    }
+                    else if (props.indexOf(property) > -1) {
                         if (property === '_raw') {
                             return target
                         } else {
@@ -244,9 +251,13 @@ class Collection {
                             if (rawValue) {
                                 switch (type) {
                                     case 'title':
+                                    case 'text':
                                     case 'url':
                                     case 'number':
                                         res = rawValue[0][0]
+                                        break
+                                    case 'checkbox':
+                                        res = Boolean(rawValue[0][0] === 'Yes')
                                         break
                                     case 'date':
                                         res = rawValue[0][0][0][1][0][1].start_date
@@ -287,10 +298,44 @@ class Collection {
                     } else {
                         return undefined
                     }
+                },
+                set: (target, prop, value, _self) => {
+                    if (props.indexOf(prop) > -1) {
+                        const { key, type } = propsKeyMap[prop]
+                        let newV
+                        switch (type) {
+                            case 'title':
+                            case 'text':
+                            case 'url':
+                            case 'number':
+                                newV = [value]
+                                break
+                            case 'checkbox':
+                                newV = value ? ['Yes'] : ['No']
+                                break
+                            case 'multi_select':
+                                if (value instanceof Array) {
+                                    newV = [value.join(',')]
+                                }
+                                break
+                            default:
+                                newV = [value]
+                        }
+
+                        let postData = {
+                            "operations": [
+                                { "id": target.id, "table": "block", "path": ["properties", key], "command": "set", "args": [newV] },
+                                { "id": target.id, "table": "block", "path": [], "command": "update", "args": { "last_edited_time": (new Date()).getTime() } }
+                            ]
+                        }
+                        this.client.reqeust.post('/api/v3/submitTransaction', postData)
+                        _self = Reflect.set(target, prop, value)
+                        return _self
+                    }
                 }
             }
             let proxy = new Proxy(rowData, handlers)
-            proxy.toString = Function.prototype.toString.bind(rowData)
+            // proxy.toString = Function.prototype.toString.bind(rowData)
             return proxy
         }
     }
