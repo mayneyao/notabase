@@ -37,8 +37,7 @@ export default class Collection {
     }
 
     makeRow(rowBlockId, schema) {
-        let rowData = this.client.blockStore[rowBlockId].value
-
+        let rowData = rowBlockId in this.client.blockStore ? this.client.blockStore[rowBlockId].value : undefined
         let props = Object.entries(schema).map(item => {
             let [key, v] = item
             return v.name
