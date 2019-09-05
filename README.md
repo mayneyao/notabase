@@ -65,3 +65,12 @@ songByArtistName = db.artists.rows.filter(a=> a.name === "someone").songs
 
 
 ```
+
+## Todos
+
+### collection
++ [ ] collection.addRow({title:"",Tags:["tag1"]}) // add new row
++ [ ] collection.Tags = [...collection.Tags, newTag] // modify tags or mutil-select
+
+### row
++ [ ] row.delete()  // delete a row
