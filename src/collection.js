@@ -78,7 +78,7 @@ class Collection {
                                         res = Boolean(rawValue[0][0] === 'Yes')
                                         break
                                     case 'date':
-                                        res = rawValue[0][0][0][1][0][1].start_date
+                                        res = rawValue[0][1][0][1].start_date
                                         break
                                     case 'multi_select':
                                         res = rawValue[0][0].split(',')
