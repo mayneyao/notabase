@@ -1,10 +1,10 @@
-import Collection from './collection'
-import { getBlockHashId, getFullBlockId, getUrlPageId } from './utils'
+const Collection = require('./collection')
+const { getBlockHashId, getFullBlockId, getUrlPageId } = require('./utils')
 
 
 const NOTION_BASE_URL = "https://www.notion.so"
 
-export default class Notabase {
+class Notabase {
     constructor(options = {}) {
         this.blockStore = {}
         this.collectionSchemaStore = {}
@@ -155,4 +155,14 @@ export default class Notabase {
         })
         return db
     }
+    async fetchConfig(url, { key, value }) {
+        let dbMap = {}
+        let config = await this.fetch(url)
+        config.rows.map(r => {
+            dbMap[r[key]] = r._raw.properties[config.propsKeyMap[value].key][0][1][0][1]
+        })
+        return dbMap
+    }
 }
+
+module.exports = Notabase

@@ -12,6 +12,7 @@
   },
   "author": "Mayne",
   "license": "ISC",
+  "type": "module",
   "bugs": {
     "url": "https://github.com/mayneyao/Natabase/issues"
   },

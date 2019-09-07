@@ -1,10 +1,8 @@
-import { isPageId } from './utils'
-
 class Row {
 
 }
 
-export default class Collection {
+class Collection {
     constructor(collectionId, collectionViewId, rawData, client) {
         this.collectionId = collectionId
         this.collectionViewId = collectionViewId
@@ -188,3 +186,5 @@ export default class Collection {
         return blockIds.map(blockId => this.makeRow(blockId, this.schema))
     }
 }
+
+module.exports = Collection
