@@ -72,10 +72,15 @@ export default class Collection {
                             if (rawValue) {
                                 switch (type) {
                                     case 'title':
-                                    case 'text':
                                     case 'url':
                                     case 'number':
                                         res = rawValue[0][0]
+                                        break
+                                    case 'text':
+                                        res = rawValue[0][0]
+                                        if (res === "‣") {
+                                            res = rawValue[0][1][0][1]
+                                        }
                                         break
                                     case 'checkbox':
                                         res = Boolean(rawValue[0][0] === 'Yes')
