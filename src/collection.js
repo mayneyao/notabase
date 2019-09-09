@@ -1,10 +1,8 @@
-import { isPageId } from './utils'
-
 class Row {
 
 }
 
-export default class Collection {
+class Collection {
     constructor(collectionId, collectionViewId, rawData, client) {
         this.collectionId = collectionId
         this.collectionViewId = collectionViewId
@@ -37,8 +35,7 @@ export default class Collection {
     }
 
     makeRow(rowBlockId, schema) {
-        let rowData = this.client.blockStore[rowBlockId].value
-
+        let rowData = rowBlockId in this.client.blockStore ? this.client.blockStore[rowBlockId].value : undefined
         let props = Object.entries(schema).map(item => {
             let [key, v] = item
             return v.name
@@ -86,7 +83,7 @@ export default class Collection {
                                         res = Boolean(rawValue[0][0] === 'Yes')
                                         break
                                     case 'date':
-                                        res = rawValue[0][0][0][1][0][1].start_date
+                                        res = rawValue[0][1][0][1].start_date
                                         break
                                     case 'multi_select':
                                         res = rawValue[0][0].split(',')
@@ -194,3 +191,5 @@ export default class Collection {
         return blockIds.map(blockId => this.makeRow(blockId, this.schema))
     }
 }
+
+module.exports = Collection

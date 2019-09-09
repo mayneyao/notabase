@@ -1,6 +1,6 @@
 {
   "name": "notabase",
-  "version": "0.6.3",
+  "version": "0.6.5",
   "description": "API Wrapper For Notion's Database",
   "main": "src/notabase.js",
   "scripts": {
@@ -12,6 +12,7 @@
   },
   "author": "Mayne",
   "license": "ISC",
+  "type": "module",
   "bugs": {
     "url": "https://github.com/mayneyao/Natabase/issues"
   },

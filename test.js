@@ -1,12 +1,17 @@
 const Notabase = require('./src/notabase')
-
+console.log(Notabase)
 
 // node env
 let nb = new Notabase()
 
 t = async () => {
 
-    let db = await nb._fetch("https://www.notion.so/gine/207fde2f97814adf964fb279382df205?v=f4fc2aad01a946999558111059d132d2")
+    let dbMap = await nb.fetchConfig("https://www.notion.so/8fb3563c9a9847c59dcb5e7f5861054b?v=13dd6c4ed5db416d85b7dcddc018b2f2", {
+        key: 'name',
+        value: 'url'
+    })
+
+    let db = await nb.fetchAll(dbMap)
 
     console.log(db)
     // let db = await nb.fetch({
