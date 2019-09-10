@@ -70,6 +70,7 @@ class Collection {
                                 switch (type) {
                                     case 'title':
                                     case 'url':
+                                    case 'select':
                                     case 'number':
                                         res = rawValue[0][0]
                                         break
