@@ -35,6 +35,7 @@ class Collection {
     }
 
     makeRow(rowBlockId, schema) {
+        if (!schema) return undefined
         let rowData = rowBlockId in this.client.blockStore ? this.client.blockStore[rowBlockId].value : undefined
         let props = Object.entries(schema).map(item => {
             let [key, v] = item
@@ -69,10 +70,16 @@ class Collection {
                             if (rawValue) {
                                 switch (type) {
                                     case 'title':
-                                    case 'text':
                                     case 'url':
+                                    case 'select':
                                     case 'number':
                                         res = rawValue[0][0]
+                                        break
+                                    case 'text':
+                                        res = rawValue[0][0]
+                                        if (res === "‣") {
+                                            res = rawValue[0][1][0][1]
+                                        }
                                         break
                                     case 'checkbox':
                                         res = Boolean(rawValue[0][0] === 'Yes')
@@ -95,7 +102,12 @@ class Collection {
                                         res = rawValue.filter(item => item.length > 1).map(item => {
                                             let _schema = this.client.collectionSchemaStore[collection_id]
                                             let _blockId = item[1][0][1]
-                                            return this.makeRow(_blockId, _schema)
+                                            if (_schema) {
+                                                return this.makeRow(_blockId, _schema)
+                                            } else {
+                                                console.log(`failed to get relation of ${_blockId}`)
+                                                return undefined
+                                            }
                                         })
                                         break
                                     case 'rollup':
