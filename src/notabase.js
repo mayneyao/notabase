@@ -62,6 +62,16 @@ class Notabase {
     }
 
 
+
+    async searchBlocks(fullTableID, query) {
+        let data = await this.reqeust.post(`/api/v3/searchBlocks`, {
+            "query": query,
+            "table": "block",
+            "id": fullTableID,
+            "limit": 20
+        })
+        return data
+    }
     async getBrowseableUrlByCollectionPageId(pageId) {
         let r = await this.getRecordValues([pageId], [])
         let viewId = r[0].value[pageId].view_ids[0]
