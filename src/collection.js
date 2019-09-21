@@ -131,6 +131,27 @@ class Collection {
                             case 'checkbox':
                                 newV = value ? [['Yes']] : [['No']]
                                 break
+                            case 'file':
+                                if (value.length === 1 && value[0]) {
+                                    newV = [[value[0], [["a", value[0]]]]]
+                                } else if (value.length === 0) {
+                                    newV = []
+                                } else {
+                                    newV = value.reduce((a, b, index) => {
+                                        if (index === 1) {
+                                            return [[a, [["a", a]]]].concat([
+                                                [","],
+                                                [b, [["a", b]]]
+                                            ])
+                                        } else {
+                                            return a.concat([
+                                                [","],
+                                                [b, [["a", b]]]
+                                            ])
+                                        }
+                                    })
+                                }
+                                break
                             case 'multi_select':
                                 if (value instanceof Array) {
                                     newV = [[value.join(',')]]
