@@ -262,6 +262,28 @@ class Collection {
                         this.client.reqeust.post('/api/v3/submitTransaction', postData)
                         _self = Reflect.set(target, prop, value)
                         return _self
+                    } else if (["formatPageIcon", "formatPageCover", "formatPageCoverPosition"].includes(prop)) {
+                        // 设置头图和 icon
+                        let path
+                        switch (prop) {
+                            case "formatPageIcon":
+                                path = ["format", "page_icon"]
+                                break
+                            case "formatPageCover":
+                                path = ["format", "page_cover"]
+                                break
+                            case "formatPageCoverPosition":
+                                path = ["format", "page_cover_position"]
+                                break
+                        }
+                        let postData = {
+                            "operations": [
+                                { "id": target.id, "table": "block", "path": path, "command": "set", "args": value },
+                                { "id": target.id, "table": "block", "path": [], "command": "update", "args": { "last_edited_time": (new Date()).getTime() } }
+                            ]
+                        }
+                        this.client.reqeust.post('/api/v3/submitTransaction', postData)
+                        return
                     }
                 }
             }
