@@ -1,4 +1,6 @@
 const Collection = require('./collection')
+const uuidv4 = require('uuid/v4')
+
 const { getBlockHashId, getFullBlockId, getUrlPageId } = require('./utils')
 
 
@@ -62,7 +64,9 @@ class Notabase {
     }
 
 
-
+    genId (){
+        return uuidv4()
+    }
     async searchBlocks(fullTableID, query) {
         let data = await this.reqeust.post(`/api/v3/searchBlocks`, {
             "query": query,

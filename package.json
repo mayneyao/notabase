@@ -1,6 +1,6 @@
 {
   "name": "notabase",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "API Wrapper For Notion's Database",
   "main": "src/notabase.js",
   "scripts": {
@@ -20,6 +20,7 @@
   "dependencies": {
     "axios": "^0.19.0",
     "dayjs": "^1.8.15",
-    "node-fetch": "^2.6.0"
+    "node-fetch": "^2.6.0",
+    "uuid": "^3.3.3"
   }
 }
