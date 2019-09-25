@@ -10,7 +10,7 @@ addEventListener('fetch', event => {
 const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, HEAD, POST,PUT, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type,auth-code",
+    "Access-Control-Allow-Headers": "Content-Type,x-auth-code",
 }
 
 function handleOptions(request) {
