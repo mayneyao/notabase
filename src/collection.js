@@ -253,6 +253,7 @@ class Collection {
                 set: (target, prop, value, _self) => {
                     if (props.indexOf(prop) > -1) {
                         let newV = this.js2notion(prop, value, propsKeyMap)
+                        const { key, type } = propsKeyMap[prop]
                         let postData = {
                             "operations": [
                                 { "id": target.id, "table": "block", "path": ["properties", key], "command": "set", "args": newV },
