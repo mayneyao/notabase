@@ -45,7 +45,7 @@ async function fetchAndApply(request) {
         body = url.searchParams.get("body")
 
         let addHeader = {}
-        let authCode = request.headers.get('auth-code')
+        let authCode = request.headers.get('x-auth-code')
 
         if (authCode && authCode === AUTH_CODE && token_v2) {
             // 本人操作
