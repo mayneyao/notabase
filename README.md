@@ -66,11 +66,36 @@ songByArtistName = db.artists.rows.filter(a=> a.name === "someone").songs
 
 ```
 
+### add new row
+
+```js
+// create then modify
+let newRow = collection.addRow()
+newRow.Tags = [tag1]
+
+// create with value
+collection.addRow({title:"",Tags:["tag1"]}) 
+
+```
+
+### update schema
+```js
+// change
+collection.schema.Tags.options.push({
+  id:nb.genId(),
+  value: "new tag",
+  color: "pink"
+})
+
+// commit
+collection.updateSchame()
+```
+
 ## Todos
 
 ### collection
-+ [ ] collection.addRow({title:"",Tags:["tag1"]}) // add new row
-+ [ ] collection.Tags = [...collection.Tags, newTag] // modify tags or mutil-select
++ [x] collection.addRow({title:"",Tags:["tag1"]}) // add new row
++ [x] updateSchema // update schema
 
 ### row
 + [ ] row.delete()  // delete a row

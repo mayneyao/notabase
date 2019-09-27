@@ -10,7 +10,7 @@ addEventListener('fetch', event => {
 const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, HEAD, POST,PUT, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type,auth-code",
+    "Access-Control-Allow-Headers": "Content-Type,x-auth-code",
 }
 
 function handleOptions(request) {
@@ -37,12 +37,7 @@ async function fetchAndApply(request) {
     }
     let url = new URL(request.url)
     let response
-    if (url.pathname === "/app-0281ea331cac4d0b02bc.js") {
-        response = await fetch("https://raw.githubusercontent.com/mayneyao/blog/master/app.js")
-        response = new Response(response.body, response)
-        response.headers.set('Content-Type', "application/x-javascript")
-        console.log("get rewrite app.js")
-    } else if ((url.pathname.startsWith("/api"))) {
+    if ((url.pathname.startsWith("/api"))) {
 
         // 因为 SW 中无法缓存 POST 请求，但是 notion 获取数据全是用的 POST 请求
         // 解决办法是把 POST 请求中的 body 转字符串，放在 url的查询参数中，在这里转换为 POST 请求
@@ -50,7 +45,7 @@ async function fetchAndApply(request) {
         body = url.searchParams.get("body")
 
         let addHeader = {}
-        let authCode = request.headers.get('auth-code')
+        let authCode = request.headers.get('x-auth-code')
 
         if (authCode && authCode === AUTH_CODE && token_v2) {
             // 本人操作
