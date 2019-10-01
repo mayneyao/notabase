@@ -132,6 +132,32 @@ class Collection {
                     newV = [[value.join(',')]]
                 }
                 break
+            case 'person':
+                if (value instanceof Array) {
+                    if (value.length === 1) {
+                        newV = [["‣", [["u", value[0]]]]]
+                    } else if (value.length === 0) {
+                        newV = []
+                    } else {
+                        newV = value.reduce((a, b, index) => {
+                            if (index === 1) {
+                                return [["‣", [["u", a]]]].concat([
+                                    [","],
+                                    ["‣", [["u", b]]]
+                                ])
+                            } else {
+                                return a.concat([
+                                    [","],
+                                    ["‣", [["u", b]]]
+                                ])
+                            }
+                        })
+                    }
+                }
+                else {
+                    throw Error()
+                }
+                break
             case 'relation':
                 // check value type , should be Row
                 if (value instanceof Array) {
@@ -230,6 +256,9 @@ class Collection {
                                         }).map(item => {
                                             return item[1][0][1]
                                         })
+                                        break
+                                    case 'person':
+                                        res = rawValue.filter(item => item.length > 1).map(item => item[1][0][1])
                                         break
                                     case 'relation':
                                         res = rawValue.filter(item => item.length > 1).map(item => {
