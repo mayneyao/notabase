@@ -270,7 +270,7 @@ class Collection {
                                             startDate: date.start_date ? utils.fixTimeZone(new Date(`${date.start_date} ${date.start_time || '00:00'}`), date.time_zone) : undefined,
                                             endDate: date.end_date ? utils.fixTimeZone(new Date(`${date.end_date} ${date.end_time || '00:00'}`), date.time_zone) : undefined,
                                             includeTime: date.type.indexOf("time") !== -1,
-                                            timeZone: time_zone
+                                            timeZone: date.time_zone
                                         }
                                         break
                                     }
