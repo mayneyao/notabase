@@ -51,5 +51,21 @@ const parseImageUrl = (url, width) => {
         return rUrl
     }
 }
+const formatDate = (date) => {
+    return `${date.getFullYear()}-${(date.getMonth() + "").padStart(2, "0")}-${(date.getDate() + "").padStart(2, "0")}`
+}
+const formatTime = (date) => {
+    return `${(date.getHours() + "").padStart(2, "0")}:${(date.getMinutes() + "").padStart(2, "0")}`
+}
+const fixTimeZone = (date, timeZone) => {
+    const firstDate = new Date(date.toLocaleString('en-US', {
+        timeZone
+    }));
+    const secondDate = new Date(date.toLocaleString('en-US', {
+        timeZone: "UTC"
+    }));
+    const diff = firstDate.getTime() - secondDate.getTime();
+    return new Date(date.getTime() + diff);
+}
 
-module.exports = { isPageId, getBlockHashId, getFullBlockId, getBrowseableUrl, getUrlPageId, parseImageUrl }
+module.exports = { isPageId, getBlockHashId, getFullBlockId, getBrowseableUrl, getUrlPageId, parseImageUrl, formatDate, formatTime, fixTimeZone }

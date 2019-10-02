@@ -1,3 +1,4 @@
+const utils = require('./utils')
 class Row {
 
 }
@@ -158,6 +159,23 @@ class Collection {
                     throw Error()
                 }
                 break
+            case 'date':
+                let type = 'date';
+                if (value.includeTime) {
+                    type += 'time'
+                }
+                if (value.endDate) {
+                    type += 'range'
+                }
+                newV = [["‣", [["d", {
+                    time_zone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                    type: type,
+                    start_date: value.startDate ? utils.formatDate(value.startDate) : undefined,
+                    start_time: value.startDate && value.includeTime ? utils.formatTime(value.startDate) : undefined,
+                    end_date: value.endDate ? utils.formatDate(value.endDate) : undefined,
+                    end_time: value.endDate && value.includeTime ? utils.formatTime(value.endDate) : undefined,
+                }]]]]
+                break;
             case 'relation':
                 // check value type , should be Row
                 if (value instanceof Array) {
@@ -243,9 +261,15 @@ class Collection {
                                     case 'checkbox':
                                         res = Boolean(rawValue[0][0] === 'Yes')
                                         break
-                                    case 'date':
-                                        res = rawValue[0][1][0][1].start_date
+                                    case 'date': {
+                                        const date = rawValue[0][1][0][1];
+                                        res = {
+                                            startDate: date.start_date ? utils.fixTimeZone(new Date(`${date.start_date} ${date.start_time || '00:00'}`), date.time_zone) : undefined,
+                                            endDate: date.end_date ? utils.fixTimeZone(new Date(`${date.end_date} ${date.end_time || '00:00'}`), date.time_zone) : undefined,
+                                            includeTime: date.type.indexOf("time") !== -1
+                                        }
                                         break
+                                    }
                                     case 'multi_select':
                                         res = rawValue[0][0].split(',')
                                         break
