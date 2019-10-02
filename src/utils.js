@@ -67,5 +67,15 @@ const fixTimeZone = (date, timeZone) => {
     const diff = firstDate.getTime() - secondDate.getTime();
     return new Date(date.getTime() + diff);
 }
+const unFixTimeZone = (date, timeZone) => {
+    const firstDate = new Date(date.toLocaleString('en-US', {
+        timeZone
+    }));
+    const secondDate = new Date(date.toLocaleString('en-US', {
+        timeZone: "UTC"
+    }));
+    const diff = firstDate.getTime() - secondDate.getTime();
+    return new Date(date.getTime() - diff);
+}
 
-module.exports = { isPageId, getBlockHashId, getFullBlockId, getBrowseableUrl, getUrlPageId, parseImageUrl, formatDate, formatTime, fixTimeZone }
+module.exports = { isPageId, getBlockHashId, getFullBlockId, getBrowseableUrl, getUrlPageId, parseImageUrl, formatDate, formatTime, fixTimeZone, unFixTimeZone }

@@ -167,13 +167,16 @@ class Collection {
                 if (value.endDate) {
                     type += 'range'
                 }
+                const timeZone = value.timeZone || Intl.DateTimeFormat().resolvedOptions().timeZone
+                const startDate = value.startDate;
+                const endDate = value.endDate;
                 newV = [["‣", [["d", {
-                    time_zone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                    type: type,
-                    start_date: value.startDate ? utils.formatDate(value.startDate) : undefined,
-                    start_time: value.startDate && value.includeTime ? utils.formatTime(value.startDate) : undefined,
-                    end_date: value.endDate ? utils.formatDate(value.endDate) : undefined,
-                    end_time: value.endDate && value.includeTime ? utils.formatTime(value.endDate) : undefined,
+                    time_zone: timeZone,
+                    type,
+                    start_date: startDate ? utils.formatDate(utils.unFixTimeZone(startDate, timeZone)) : undefined,
+                    start_time: startDate && value.includeTime ? utils.formatTime(utils.unFixTimeZone(startDate, timeZone)) : undefined,
+                    end_date: endDate ? utils.formatDate(utils.unFixTimeZone(endDate, timeZone)) : undefined,
+                    end_time: endDate && value.includeTime ? utils.formatTime(utils.unFixTimeZone(endDate, timeZone)) : undefined,
                 }]]]]
                 break;
             case 'relation':
@@ -266,7 +269,8 @@ class Collection {
                                         res = {
                                             startDate: date.start_date ? utils.fixTimeZone(new Date(`${date.start_date} ${date.start_time || '00:00'}`), date.time_zone) : undefined,
                                             endDate: date.end_date ? utils.fixTimeZone(new Date(`${date.end_date} ${date.end_time || '00:00'}`), date.time_zone) : undefined,
-                                            includeTime: date.type.indexOf("time") !== -1
+                                            includeTime: date.type.indexOf("time") !== -1,
+                                            timeZone: time_zone
                                         }
                                         break
                                     }
