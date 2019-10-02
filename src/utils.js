@@ -75,7 +75,7 @@ const unFixTimeZone = (date, timeZone) => {
         timeZone: "UTC"
     }));
     const diff = firstDate.getTime() - secondDate.getTime();
-    return new Date(date.getTime() - diff);
+    return new Date(date.getTime() + diff);
 }
 
 module.exports = { isPageId, getBlockHashId, getFullBlockId, getBrowseableUrl, getUrlPageId, parseImageUrl, formatDate, formatTime, fixTimeZone, unFixTimeZone }
