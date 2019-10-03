@@ -1,3 +1,4 @@
+const utils = require('./utils')
 class Row {
 
 }
@@ -132,6 +133,52 @@ class Collection {
                     newV = [[value.join(',')]]
                 }
                 break
+            case 'person':
+                if (value instanceof Array) {
+                    if (value.length === 1) {
+                        newV = [["‣", [["u", value[0]]]]]
+                    } else if (value.length === 0) {
+                        newV = []
+                    } else {
+                        newV = value.reduce((a, b, index) => {
+                            if (index === 1) {
+                                return [["‣", [["u", a]]]].concat([
+                                    [","],
+                                    ["‣", [["u", b]]]
+                                ])
+                            } else {
+                                return a.concat([
+                                    [","],
+                                    ["‣", [["u", b]]]
+                                ])
+                            }
+                        })
+                    }
+                }
+                else {
+                    throw Error()
+                }
+                break
+            case 'date':
+                let type = 'date';
+                if (value.includeTime) {
+                    type += 'time'
+                }
+                if (value.endDate) {
+                    type += 'range'
+                }
+                const timeZone = value.timeZone || Intl.DateTimeFormat().resolvedOptions().timeZone
+                const startDate = value.startDate;
+                const endDate = value.endDate;
+                newV = [["‣", [["d", {
+                    time_zone: timeZone,
+                    type,
+                    start_date: startDate ? utils.formatDate(utils.unFixTimeZone(startDate, timeZone)) : undefined,
+                    start_time: startDate && value.includeTime ? utils.formatTime(utils.unFixTimeZone(startDate, timeZone)) : undefined,
+                    end_date: endDate ? utils.formatDate(utils.unFixTimeZone(endDate, timeZone)) : undefined,
+                    end_time: endDate && value.includeTime ? utils.formatTime(utils.unFixTimeZone(endDate, timeZone)) : undefined,
+                }]]]]
+                break;
             case 'relation':
                 // check value type , should be Row
                 if (value instanceof Array) {
@@ -217,9 +264,16 @@ class Collection {
                                     case 'checkbox':
                                         res = Boolean(rawValue[0][0] === 'Yes')
                                         break
-                                    case 'date':
-                                        res = rawValue[0][1][0][1].start_date
+                                    case 'date': {
+                                        const date = rawValue[0][1][0][1];
+                                        res = {
+                                            startDate: date.start_date ? utils.fixTimeZone(new Date(`${date.start_date} ${date.start_time || '00:00'}`), date.time_zone) : undefined,
+                                            endDate: date.end_date ? utils.fixTimeZone(new Date(`${date.end_date} ${date.end_time || '00:00'}`), date.time_zone) : undefined,
+                                            includeTime: date.type.indexOf("time") !== -1,
+                                            timeZone: date.time_zone
+                                        }
                                         break
+                                    }
                                     case 'multi_select':
                                         res = rawValue[0][0].split(',')
                                         break
@@ -230,6 +284,9 @@ class Collection {
                                         }).map(item => {
                                             return item[1][0][1]
                                         })
+                                        break
+                                    case 'person':
+                                        res = rawValue.filter(item => item.length > 1).map(item => item[1][0][1])
                                         break
                                     case 'relation':
                                         res = rawValue.filter(item => item.length > 1).map(item => {
