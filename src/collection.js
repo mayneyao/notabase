@@ -267,8 +267,8 @@ class Collection {
                                     case 'date': {
                                         const date = rawValue[0][1][0][1];
                                         res = {
-                                            startDate: date.start_date ? utils.fixTimeZone(new Date(`${date.start_date} ${date.start_time || '00:00'}`), date.time_zone) : undefined,
-                                            endDate: date.end_date ? utils.fixTimeZone(new Date(`${date.end_date} ${date.end_time || '00:00'}`), date.time_zone) : undefined,
+                                            startDate: date.start_date ? utils.fixTimeZone(`${date.start_date} ${date.start_time || '00:00'}`, date.time_zone) : undefined,
+                                            endDate: date.end_date ? utils.fixTimeZone(`${date.end_date} ${date.end_time || '00:00'}`, date.time_zone) : undefined,
                                             includeTime: date.type.indexOf("time") !== -1,
                                             timeZone: date.time_zone
                                         }

@@ -52,30 +52,21 @@ const parseImageUrl = (url, width) => {
     }
 }
 const formatDate = (date) => {
-    return `${date.getFullYear()}-${(date.getMonth() + "").padStart(2, "0")}-${(date.getDate() + "").padStart(2, "0")}`
+    return `${date.getFullYear()}-${(date.getMonth() + 1 + "").padStart(2, "0")}-${(date.getDate() + "").padStart(2, "0")}`
 }
 const formatTime = (date) => {
     return `${(date.getHours() + "").padStart(2, "0")}:${(date.getMinutes() + "").padStart(2, "0")}`
 }
-const fixTimeZone = (date, timeZone) => {
-    const firstDate = new Date(date.toLocaleString('en-US', {
-        timeZone
-    }));
-    const secondDate = new Date(date.toLocaleString('en-US', {
-        timeZone: "UTC"
-    }));
-    const diff = firstDate.getTime() - secondDate.getTime();
-    return new Date(date.getTime() + diff);
+const fixTimeZone = (dateAsString, timeZone) => {
+    const shortTz = new Date().
+        toLocaleString("en", { timeZoneName: "short", timeZone }).
+        split(' ').
+        pop()
+    return new Date(dateAsString + " " + shortTz);
 }
 const unFixTimeZone = (date, timeZone) => {
-    const firstDate = new Date(date.toLocaleString('en-US', {
-        timeZone
-    }));
-    const secondDate = new Date(date.toLocaleString('en-US', {
-        timeZone: "UTC"
-    }));
-    const diff = firstDate.getTime() - secondDate.getTime();
-    return new Date(date.getTime() + diff);
+    const adjustedTime = date.toLocaleString("en-US", { timeZone });
+    return new Date(adjustedTime);
 }
 
 module.exports = { isPageId, getBlockHashId, getFullBlockId, getBrowseableUrl, getUrlPageId, parseImageUrl, formatDate, formatTime, fixTimeZone, unFixTimeZone }
