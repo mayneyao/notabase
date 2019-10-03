@@ -27,7 +27,7 @@ class Collection {
             }
         })
 
-        // 缓存
+        // cache
         this.client.blockStore = { ...this.client.blockStore, ...rawData.recordMap.block }
     }
     addRow(data) {
@@ -54,14 +54,14 @@ class Collection {
                     id: newId,
                     path: [],
                     table: "block"
-                }, // 新建 row block
+                }, // create new row block
                 {
                     args: { parent_id: this.collectionId, parent_table: "collection", alive: true },
                     command: "update",
                     id: newId,
                     path: [],
                     table: "block"
-                }, // 父节点设置为 table
+                }, // set parent node
                 {
                     args: {
                         // created_by: "c8e68ca2-a84d-4792-a6d6-1e7716982001",
@@ -73,7 +73,7 @@ class Collection {
                     id: newId,
                     path: [],
                     table: "block"
-                } // 设置创建更新时间/用户 fixme
+                } // [fixme] set create/edit time
             ]
         }
         if (updateData) {

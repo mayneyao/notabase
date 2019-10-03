@@ -1,19 +1,19 @@
 # Notabase (WIP)
 API Wrapper For Notion's Database
 
-# Getting Started
+## Getting Started
 
-## Installing
+### Installing
 
 ```
 yarn add notabase
 ```
 
-## Use
+### Use
 
 You can use notabse in browser, browser extension, and node. But there is a difference when initializing the notabase instance.
 
-### Node
+#### Node
 
 | Env  | Token | Read | Write | Note|
 | ------------- | ------------- | ------------- | ------------- | ------------- |
@@ -33,7 +33,7 @@ let nb = new Notabase({
 
 ```
 
-### Browser
+#### Browser
 
 If you want to use Notabase in your web pages, you need to handle CORS. You can solve this problem with a cloudflare worker.Generate a cloudflare-worker using the code from [`src/cf-worker.js`](src/cf-worker.js)
 
@@ -60,7 +60,7 @@ let nb = new Notabase({
 
 ```
 
-### Browser Extension
+#### Browser Extension
 
 ```js
 import Notabase from 'notabase'
@@ -74,7 +74,7 @@ let nb = new Notabase()
 [withCredentials](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/withCredentials)
 
 
-### Fetch Data
+#### Fetch Data
 
 | Method  |  Note|
 | ------------- | ------------- |
@@ -97,7 +97,7 @@ let db = await nb.fetchAll({
 
 ```
 
-### Query 
+#### Query 
 
 Data in Notion table will be mapped to JavaScript Array
 
@@ -123,14 +123,14 @@ let songByArtistName = allSongs.filter(song=> song.artist[0].name === "someone")
 songByArtistName = db.artists.rows.filter(a=> a.name === "someone").songs
 
 ```
-### Write
+#### Write
 
 ```js
 let aSong = allSongs.find(song=> song.title === "Bad Guy")
 aSong.title = "new title"
 ```
 
-### Create
+#### Create
 
 ```js
 // create then modify
@@ -142,7 +142,7 @@ collection.addRow({title:"",Tags:["tag1"]})
 
 ```
 
-### Update Table Schema
+#### Update Table Schema
 ```js
 // change
 collection.schema.Tags.options.push({
