@@ -152,7 +152,7 @@ collection.schema.Tags.options.push({
 })
 
 // commit
-collection.updateSchame()
+collection.updateSchema()
 ```
 
 ## Todos
