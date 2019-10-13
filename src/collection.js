@@ -110,7 +110,7 @@ class Collection {
                     // if select value is not exists,create it & update schema
                     this.schema[prop].options.push({
                         id: this.client.genId(),
-                        value
+                        value: v
                     })
                 }
             })
