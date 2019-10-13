@@ -94,6 +94,30 @@ class Collection {
         return this.makeRow(newId, this._schema)
     }
 
+    checkOrCreateSelectOptions(prop, value, type) {
+        if (type === "select") {
+            if (!this.schema[prop].options.find(o => o.value === value)) {
+                // if select value is not exists,create it & update schema
+                this.schema[prop].options.push({
+                    id: this.client.genId(),
+                    value
+                })
+                this.updateSchema()
+            }
+        } else if (type === "multi_select") {
+            value.map(v => {
+                if (!this.schema[prop].options.find(o => o.value === v)) {
+                    // if select value is not exists,create it & update schema
+                    this.schema[prop].options.push({
+                        id: this.client.genId(),
+                        value
+                    })
+                }
+            })
+            this.updateSchema()
+        }
+    }
+
     js2notion(prop, value, propsKeyMap) {
         const { key, type } = propsKeyMap[prop]
         let newV
@@ -128,8 +152,14 @@ class Collection {
                     })
                 }
                 break
+            case 'select':
+                this.checkOrCreateSelectOptions(prop, value, type)
+                newV = [[value]]
+                break
             case 'multi_select':
+                this.checkOrCreateSelectOptions(prop, value, type)
                 if (value instanceof Array) {
+                    value.map(v => { })
                     newV = [[value.join(',')]]
                 }
                 break
