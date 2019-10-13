@@ -95,7 +95,12 @@ class Collection {
     }
 
     checkOrCreateSelectOptions(prop, value, type) {
-        if (type === "select") {
+        // init options fix
+        if (!this.schema[prop].options){
+            this.schema[prop].options = []
+        }
+
+        if (type === "select") {   
             if (!this.schema[prop].options.find(o => o.value === value)) {
                 // if select value is not exists,create it & update schema
                 this.schema[prop].options.push({
