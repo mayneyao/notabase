@@ -96,11 +96,11 @@ class Collection {
 
     checkOrCreateSelectOptions(prop, value, type) {
         // init options fix
-        if (!this.schema[prop].options){
+        if (!this.schema[prop].options) {
             this.schema[prop].options = []
         }
 
-        if (type === "select") {   
+        if (type === "select") {
             if (!this.schema[prop].options.find(o => o.value === value)) {
                 // if select value is not exists,create it & update schema
                 this.schema[prop].options.push({
@@ -110,16 +110,20 @@ class Collection {
                 this.updateSchema()
             }
         } else if (type === "multi_select") {
+            let needUpdateSchema = false
             value.map(v => {
                 if (!this.schema[prop].options.find(o => o.value === v)) {
                     // if select value is not exists,create it & update schema
+                    needUpdateSchema = true
                     this.schema[prop].options.push({
                         id: this.client.genId(),
                         value: v
                     })
                 }
             })
-            this.updateSchema()
+            if (needUpdateSchema) {
+                this.updateSchema()
+            }
         }
     }
 
