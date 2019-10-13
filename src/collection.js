@@ -153,11 +153,11 @@ class Collection {
                 }
                 break
             case 'select':
-                this.checkOrCreateSelectOptions(prop, value, type)
+                this.checkOrCreateSelectOptions(prop, value, 'select')
                 newV = [[value]]
                 break
             case 'multi_select':
-                this.checkOrCreateSelectOptions(prop, value, type)
+                this.checkOrCreateSelectOptions(prop, value, 'multi_select')
                 if (value instanceof Array) {
                     value.map(v => { })
                     newV = [[value.join(',')]]
