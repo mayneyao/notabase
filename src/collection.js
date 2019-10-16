@@ -128,9 +128,9 @@ class Collection {
     }
 
     js2notion(prop, value, propsKeyMap) {
-        const { key, type } = propsKeyMap[prop]
         let newV
-        switch (type) {
+        // fuck babel
+        switch (propsKeyMap[prop].type) {
             case 'title':
             case 'text':
             case 'url':
