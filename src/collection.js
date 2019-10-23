@@ -135,7 +135,7 @@ class Collection {
             case 'text':
             case 'url':
             case 'number':
-                newV = [[value]]
+                newV = [[value + ""]] // 强制转化成字符串，否则后续修改表格数据可能会造成客户端崩溃。
                 break
             case 'checkbox':
                 newV = value ? [['Yes']] : [['No']]
@@ -163,7 +163,7 @@ class Collection {
                 break
             case 'select':
                 this.checkOrCreateSelectOptions(prop, value, 'select')
-                newV = [[value]]
+                newV = [[value + ""]]
                 break
             case 'multi_select':
                 this.checkOrCreateSelectOptions(prop, value, 'multi_select')
@@ -248,7 +248,7 @@ class Collection {
                 }
                 break
             default:
-                newV = [[value]]
+                newV = [[value + ""]]
         }
         return newV
     }

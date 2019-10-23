@@ -1,13 +1,14 @@
 const Collection = require('./collection')
 const uuidv4 = require('uuid/v4')
+const utils = require('./utils')
 
 const { getBlockHashId, getFullBlockId, getUrlPageId } = require('./utils')
-
 
 const NOTION_BASE_URL = "https://www.notion.so"
 
 class Notabase {
     constructor(options = {}) {
+        this.utils = utils
         this.blockStore = {}
         this.collectionSchemaStore = {}
         this.collectionStore = {}
@@ -64,7 +65,7 @@ class Notabase {
     }
 
 
-    genId (){
+    genId() {
         return uuidv4()
     }
     async searchBlocks(fullTableID, query) {
@@ -110,13 +111,12 @@ class Notabase {
     }
 
     async fetchCollectionData(collectionId, collectionViewId) {
-
         let data = await this.reqeust.post(`/api/v3/queryCollection`, {
             collectionId,
             collectionViewId,
             loader: {
                 "type": "table",
-                "limit": 1000,
+                "limit": 10000,
                 "userTimeZone": "Asia/Shanghai",
                 "userLocale": "zh-tw",
                 "loadContentCover": true
