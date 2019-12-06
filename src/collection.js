@@ -348,6 +348,25 @@ class Collection {
                             }
                             return res
                         }
+                    } else if (property === "delete") {
+                        let del = () => {
+                            let postData = {
+                                "operations": [
+                                    {
+                                        "id": target.id, "table": "block", "path": [], "command": "update", "args": {
+                                            parent_id: this.collectionId,
+                                            parent_table: "collection",
+                                            alive: false
+                                        }
+                                    },
+                                    {
+                                        "id": target.id, "table": "block", "path": ["last_edited_time"], "command": "set", "args": (new Date()).getTime()
+                                    }
+                                ]
+                            }
+                            this.client.reqeust.post('/api/v3/submitTransaction', postData)
+                        }
+                        return del
                     } else {
                         return undefined
                     }
