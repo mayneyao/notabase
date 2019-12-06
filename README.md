@@ -135,12 +135,21 @@ aSong.title = "new title"
 ```js
 // create then modify
 let newRow = collection.addRow()
-newRow.Tags = [tag1]
+// if tag1 is not exists, it will be auto created. 
+newRow.Tags = ["tag1"]
+
 
 // create with value
 collection.addRow({title:"",Tags:["tag1"]}) 
 
 ```
+
+#### Delete
+```js
+// delete row 
+aSong.delete()
+```
+
 
 #### Update Table Schema
 ```js
@@ -162,4 +171,4 @@ collection.updateSchema()
 + [x] updateSchema // update schema
 
 ### row
-+ [ ] row.delete()  // delete a row
++ [x] row.delete()  // delete a row
