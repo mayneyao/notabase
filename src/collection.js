@@ -30,6 +30,7 @@ class Collection {
         // cache
         this.client.blockStore = { ...this.client.blockStore, ...rawData.recordMap.block }
     }
+
     addRow(data) {
         const newId = this.client.genId()
 
@@ -134,6 +135,8 @@ class Collection {
             case 'title':
             case 'text':
             case 'url':
+            case 'email':
+            case 'phone_number':
             case 'number':
                 newV = [[value + ""]] // 强制转化成字符串，否则后续修改表格数据可能会造成客户端崩溃。
                 break
@@ -253,6 +256,73 @@ class Collection {
         return newV
     }
 
+    notion2js(rawValue, type, collection_id) {
+        let res
+        if (rawValue) {
+            switch (type) {
+                case 'title':
+                case 'url':
+                case 'email':
+                case 'phone_number':
+                case 'select':
+                case 'number':
+                    res = rawValue[0][0]
+                    break
+                case 'text':
+                    res = rawValue[0][0]
+                    if (res === "‣") {
+                        res = rawValue[0][1][0][1]
+                    }
+                    break
+                case 'checkbox':
+                    res = Boolean(rawValue[0][0] === 'Yes')
+                    break
+                case 'date': {
+                    const date = rawValue[0][1][0][1];
+                    res = {
+                        startDate: date.start_date ? utils.fixTimeZone(`${date.start_date} ${date.start_time || '00:00'}`, date.time_zone) : undefined,
+                        endDate: date.end_date ? utils.fixTimeZone(`${date.end_date} ${date.end_time || '00:00'}`, date.time_zone) : undefined,
+                        includeTime: date.type.indexOf("time") !== -1,
+                        timeZone: date.time_zone
+                    }
+                    break
+                }
+                case 'multi_select':
+                    res = rawValue[0][0].split(',')
+                    break
+                case 'file':
+                    res = rawValue.filter(item => {
+                        let content = item[1]
+                        return Boolean(content)
+                    }).map(item => {
+                        return item[1][0][1]
+                    })
+                    break
+                case 'person':
+                    res = rawValue.filter(item => item.length > 1).map(item => item[1][0][1])
+                    break
+                case 'relation':
+                    res = rawValue.filter(item => item.length > 1).map(item => {
+                        let _schema = this.client.collectionSchemaStore[collection_id]
+                        let _blockId = item[1][0][1]
+                        if (_schema) {
+                            return this.makeRow(_blockId, _schema)
+                        } else {
+                            console.log(`failed to get relation of ${_blockId}`)
+                            return undefined
+                        }
+                    })
+                    break
+                case 'rollup':
+                    res = rawValue.filter(item => item.length > 1).map(item => item[1][0])
+                    break
+                default:
+                    res = rawValue
+            }
+        }
+        return res
+    }
+
     makeRow(rowBlockId, schema) {
         if (!schema) return undefined
         let rowData = rowBlockId in this.client.blockStore ? this.client.blockStore[rowBlockId].value : undefined
@@ -284,69 +354,8 @@ class Collection {
                             return target
                         } else {
                             const { key, type, collection_id } = propsKeyMap[property]
-                            let res
                             let rawValue = target.properties ? target.properties[key] : false
-                            if (rawValue) {
-                                switch (type) {
-                                    case 'title':
-                                    case 'url':
-                                    case 'select':
-                                    case 'number':
-                                        res = rawValue[0][0]
-                                        break
-                                    case 'text':
-                                        res = rawValue[0][0]
-                                        if (res === "‣") {
-                                            res = rawValue[0][1][0][1]
-                                        }
-                                        break
-                                    case 'checkbox':
-                                        res = Boolean(rawValue[0][0] === 'Yes')
-                                        break
-                                    case 'date': {
-                                        const date = rawValue[0][1][0][1];
-                                        res = {
-                                            startDate: date.start_date ? utils.fixTimeZone(`${date.start_date} ${date.start_time || '00:00'}`, date.time_zone) : undefined,
-                                            endDate: date.end_date ? utils.fixTimeZone(`${date.end_date} ${date.end_time || '00:00'}`, date.time_zone) : undefined,
-                                            includeTime: date.type.indexOf("time") !== -1,
-                                            timeZone: date.time_zone
-                                        }
-                                        break
-                                    }
-                                    case 'multi_select':
-                                        res = rawValue[0][0].split(',')
-                                        break
-                                    case 'file':
-                                        res = rawValue.filter(item => {
-                                            let content = item[1]
-                                            return Boolean(content)
-                                        }).map(item => {
-                                            return item[1][0][1]
-                                        })
-                                        break
-                                    case 'person':
-                                        res = rawValue.filter(item => item.length > 1).map(item => item[1][0][1])
-                                        break
-                                    case 'relation':
-                                        res = rawValue.filter(item => item.length > 1).map(item => {
-                                            let _schema = this.client.collectionSchemaStore[collection_id]
-                                            let _blockId = item[1][0][1]
-                                            if (_schema) {
-                                                return this.makeRow(_blockId, _schema)
-                                            } else {
-                                                console.log(`failed to get relation of ${_blockId}`)
-                                                return undefined
-                                            }
-                                        })
-                                        break
-                                    case 'rollup':
-                                        res = rawValue.filter(item => item.length > 1).map(item => item[1][0])
-                                        break
-                                    default:
-                                        res = rawValue
-                                }
-                            }
-                            return res
+                            return this.notion2js(rawValue, type, collection_id)
                         }
                     } else if (property === "delete") {
                         let del = () => {
@@ -443,6 +452,7 @@ class Collection {
         let proxy = new Proxy(this._schema, handlers)
         return proxy
     }
+
     updateSchema() {
         let postData = {
             "operations": [

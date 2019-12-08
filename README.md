@@ -37,7 +37,7 @@ let nb = new Notabase({
 
 If you want to use Notabase in your web pages, you need to handle CORS. You can solve this problem with a cloudflare worker.Generate a cloudflare-worker using the code from [`src/cf-worker.js`](src/cf-worker.js)
 
-In the browser environment, we don't use `token` directly, instead we use `authcode` to handle identity checks. You need to set an `authcode` in your `cf-worker` that only you know, and then we use it when initializing the notabase instance.
+In the browser environment, we don't use `token` directly, instead we use `authcode` to handle identity checks. You need to set an `authcode` that only you know in your `cf-worker` , and then we use it when initializing the notabase instance.
 
 | Env  | authCode | Read | Write | Note
 | ------------- | ------------- | ------------- | ------------- | ------------- |
@@ -116,7 +116,6 @@ console.log(`${song.artist[0].Name}`) // a song maybe has two or more artists
 
 // search song by title in song's table
 let aSong = allSongs.find(song=> song.title === "Bad Guy")
-
 // search all song by artist's name in song's table
 let songByArtistName = allSongs.filter(song=> song.artist[0].name === "someone")
 // search all song by artist's name in artist's table
@@ -172,3 +171,6 @@ collection.updateSchema()
 
 ### row
 + [x] row.delete()  // delete a row
+
+### all
++ [ ] Rewrite in TypeScript
