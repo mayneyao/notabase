@@ -29,13 +29,19 @@ class Collection {
 
         // cache
         this.client.blockStore = { ...this.client.blockStore, ...rawData.recordMap.block }
-        if (this.total > 980){
-          this.fetchMore();
-        }
+        this.completed = false
+
+        return (async () => {
+          if (this.total > 980){
+            await this.fetchMore();
+          } 
+          this.completed = true;
+          return this;
+        })()
     }
 
     async fetchMore() {
-        const data = await this.client.queryCollection(this.collectionId, this.collectionViewId, limit=this.total);
+        const data = await this.client.queryCollection(this.collectionId, this.collectionViewId, this.total);
         const blockIds = data.result.blockIds.slice(980, this.total);
         const blocksDataList = await this.client.getRecordValues(blockIds, []);
         blocksDataList.forEach(item => {

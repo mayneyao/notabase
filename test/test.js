@@ -44,9 +44,6 @@ test('collection', async () => {
 test('collection over 1000 records', async () => {
   let testTable1Url = "https://www.notion.so/c9e0e4c92c864ca2a4d3550cffe442f9?v=2424ba0a32bd4a8790bd1d0b74f78fcb"
   let db = await nb.fetch(testTable1Url);
-  expect(db.rows.length).toBeGreaterThanOrEqual(980);
-  expect(db.total).toBeGreaterThanOrEqual(1278);
-  setTimeout(()=>{
-    expect(db.rows.length).toBeGreaterThanOrEqual(db.total);
-  },1000);
+  expect(db.rows.length).toBe(1278);
+  expect(db.total).toBe(1278);
 }, 10000)

@@ -87,7 +87,7 @@ class Notabase {
 
     async getRecordValues(blockIds, collectionIds) {
         let requestsIds = [...blockIds.map(item => ({ "table": "block", "id": item })), ...collectionIds.map(item => ({ "table": "collection", "id": item }))]
-        console.log(`>>>> getRecordValues:${requestsIds}`)
+        requestsIds.length > 10 ?console.log(`>>>> getRecordValues: ${requestsIds.length}`): console.log(`>>>> getRecordValues:${requestsIds}`)
         let data = await this.reqeust.post(`/api/v3/getRecordValues`,
             {
                 requests: requestsIds
@@ -136,7 +136,7 @@ class Notabase {
          */
         let schema = data.recordMap.collection[collectionId].value.schema
         this.collectionSchemaStore[collectionId] = schema
-        return new Collection(collectionId, collectionViewId, data, this)
+        return await new Collection(collectionId, collectionViewId, data, this)
     }
     async fetch(urlOrPageId) {
         let collectionId, collectionViewId, pageId
