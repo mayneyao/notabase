@@ -38,3 +38,15 @@ test('collection', async () => {
     expect(Relation[0].Name).toBe("table2 row1")
 
 }, 10000)
+
+
+
+test('collection over 1000 records', async () => {
+  let testTable1Url = "https://www.notion.so/c9e0e4c92c864ca2a4d3550cffe442f9?v=2424ba0a32bd4a8790bd1d0b74f78fcb"
+  let db = await nb.fetch(testTable1Url);
+  expect(db.rows.length).toBeGreaterThanOrEqual(980);
+  expect(db.total).toBeGreaterThanOrEqual(1278);
+  setTimeout(()=>{
+    expect(db.rows.length).toBeGreaterThanOrEqual(db.total);
+  },1000);
+}, 10000)

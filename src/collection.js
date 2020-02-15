@@ -29,8 +29,21 @@ class Collection {
 
         // cache
         this.client.blockStore = { ...this.client.blockStore, ...rawData.recordMap.block }
+        if (this.total > 980){
+          this.fetchMore();
+        }
     }
 
+    async fetchMore() {
+        const data = await this.client.queryCollection(this.collectionId, this.collectionViewId, limit=this.total);
+        const blockIds = data.result.blockIds.slice(980, this.total);
+        const blocksDataList = await this.client.getRecordValues(blockIds, []);
+        blocksDataList.forEach(item => {
+          this.client.blockStore[item.value.id] = item;
+        })
+        // update blockIds
+        this.rawData.result = data.result;
+    }
     addRow(data) {
         const newId = this.client.genId()
 

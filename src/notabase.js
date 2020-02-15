@@ -110,20 +110,30 @@ class Notabase {
         return [collectionId, collectionViewId]
     }
 
-    async fetchCollectionData(collectionId, collectionViewId) {
-        let data = await this.reqeust.post(`/api/v3/queryCollection`, {
-            collectionId,
-            collectionViewId,
-            loader: {
-                "type": "table",
-                "limit": 10000,
-                "userTimeZone": "Asia/Shanghai",
-                "userLocale": "zh-tw",
-                "loadContentCover": true
-            }
-        })
+    async queryCollection(collectionId, collectionViewId, limit=980) {
+      return await this.reqeust.post(`/api/v3/queryCollection`, {
+          collectionId,
+          collectionViewId,
+          loader: {
+              "type": "table",
+              "limit": limit, 
+              "userTimeZone": "Asia/Shanghai",
+              "userLocale": "zh-tw",
+              "loadContentCover": true
+          }
+      })
+    }
+    
+    async fetchCollectionData(collectionId, collectionViewId, limit=980) {
+        let data = await this.queryCollection(collectionId, collectionViewId, limit);
         console.log(`>>>> queryCollection:${collectionId}`)
         // prefetch relation  data 
+        /**
+         * when limit > 1000, notion wont return recordMap. 
+         * we need use getRecordValues fetch data piece by piece
+         * 70 blocks/req 
+         * 70*14 = 980 < 1000
+         */
         let schema = data.recordMap.collection[collectionId].value.schema
         this.collectionSchemaStore[collectionId] = schema
         return new Collection(collectionId, collectionViewId, data, this)
