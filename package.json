@@ -1,6 +1,6 @@
 {
   "name": "notabase",
-  "version": "0.8.5",
+  "version": "0.8.6",
   "description": "API Wrapper For Notion's Database",
   "main": "src/notabase.js",
   "scripts": {
