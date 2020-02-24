@@ -87,7 +87,7 @@ class Notabase {
 
     async getRecordValues(blockIds, collectionIds) {
         let requestsIds = [...blockIds.map(item => ({ "table": "block", "id": item })), ...collectionIds.map(item => ({ "table": "collection", "id": item }))]
-        requestsIds.length > 10 ?console.log(`>>>> getRecordValues: ${requestsIds.length}`): console.log(`>>>> getRecordValues:${requestsIds}`)
+        requestsIds.length > 10 ? console.log(`>>>> getRecordValues: ${requestsIds.length}`) : console.log(`>>>> getRecordValues:${requestsIds}`)
         let data = await this.reqeust.post(`/api/v3/getRecordValues`,
             {
                 requests: requestsIds
@@ -110,21 +110,21 @@ class Notabase {
         return [collectionId, collectionViewId]
     }
 
-    async queryCollection(collectionId, collectionViewId, limit=980) {
-      return await this.reqeust.post(`/api/v3/queryCollection`, {
-          collectionId,
-          collectionViewId,
-          loader: {
-              "type": "table",
-              "limit": limit, 
-              "userTimeZone": "Asia/Shanghai",
-              "userLocale": "zh-tw",
-              "loadContentCover": true
-          }
-      })
+    async queryCollection(collectionId, collectionViewId, limit = 980) {
+        return await this.reqeust.post(`/api/v3/queryCollection`, {
+            collectionId,
+            collectionViewId,
+            loader: {
+                "type": "table",
+                "limit": limit,
+                "userTimeZone": "Asia/Shanghai",
+                "userLocale": "zh-tw",
+                "loadContentCover": true
+            }
+        })
     }
-    
-    async fetchCollectionData(collectionId, collectionViewId, limit=980) {
+
+    async fetchCollectionData(collectionId, collectionViewId, limit = 980) {
         let data = await this.queryCollection(collectionId, collectionViewId, limit);
         console.log(`>>>> queryCollection:${collectionId}`)
         // prefetch relation  data 
@@ -142,26 +142,17 @@ class Notabase {
         let collectionId, collectionViewId, pageId
         if (urlOrPageId.match("^[a-zA-Z0-9-]+$")) {
             // pageId with '-' split
-            pageId = getBlockHashId(urlOrPageId)
-
-            if (pageId && pageId in this.collectionStore) {
-                return this.collectionStore[pageId]
-            } else {
-                [collectionId, collectionViewId] = await this.getPageCollectionInfo(getBlockHashId(urlOrPageId))
-            }
+            // pageId = getBlockHashId(urlOrPageId)
+            [collectionId, collectionViewId] = await this.getPageCollectionInfo(getBlockHashId(urlOrPageId))
         } else if (urlOrPageId.startsWith("http")) {
             // url 
-            pageId = getUrlPageId(urlOrPageId)
-            if (pageId && pageId in this.collectionStore) {
-                return this.collectionStore[pageId]
-            } else {
-                let [base, params] = urlOrPageId.split('?')
-                let baseUrlList = base.split('/'); // 这里需要添加分号，否则编译出错。 参见 https://www.zhihu.com/question/20298345/answer/49551142
-                [collectionId, collectionViewId] = await this.getPageCollectionInfo(baseUrlList[baseUrlList.length - 1])
-            }
+            // pageId = getUrlPageId(urlOrPageId)
+            let [base, params] = urlOrPageId.split('?')
+            let baseUrlList = base.split('/'); // 这里需要添加分号，否则编译出错。 参见 https://www.zhihu.com/question/20298345/answer/49551142
+            [collectionId, collectionViewId] = await this.getPageCollectionInfo(baseUrlList[baseUrlList.length - 1])
         }
         let r = await this.fetchCollectionData(collectionId, collectionViewId)
-        this.collectionStore[pageId] = r
+        // this.collectionStore[pageId] = r
         return r
     }
 
