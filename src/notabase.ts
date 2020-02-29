@@ -34,12 +34,13 @@ export class Notabase {
         this.blockStore = {}
         this.collectionSchemaStore = {}
         this.collectionStore = {}
-        const { proxy, token } = options
+
+
         // proxy > browser env + cloudflare worker
         // token > node env
 
-        if (proxy) {
-            const { url, authCode } = proxy
+        if (options && options.proxy) {
+            const { url, authCode } = options.proxy
             // browser env
             this.url = url // cloudflare worker url
             // auth code for cloudflare worker (nobody knows but you ,same to the code that config in cf-worker)
@@ -59,6 +60,7 @@ export class Notabase {
             }
         } else {
             // token node env 
+            const token = options && options.token;
             this.token = token
             let tkHeader = token ? { 'cookie': `token_v2=${token}` } : {}
             const fetch = require("node-fetch")
@@ -90,6 +92,7 @@ export class Notabase {
     genId() {
         return uuidv4()
     }
+    
     async searchBlocks(fullTableID, query) {
         let data = await this.reqeust.post(`/api/v3/searchBlocks`, {
             "query": query,
