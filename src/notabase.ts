@@ -1,5 +1,5 @@
 import { Collection } from './collection';
-import uuidv4 from 'uuid/v4';
+import { v4 as uuid } from 'uuid';
 import * as utils from './utils';
 
 import { BlockValue } from './interface';
@@ -23,9 +23,9 @@ export class Notabase {
     };
     collectionSchemaStore: any;
     collectionStore: any;
-    url: string;
-    authCode: string;
-    token: string;
+    private url: string;
+    private authCode: string;
+    private token: string;
     reqeust: {
         post: (path: string, data: any) => any;
     }
@@ -34,8 +34,6 @@ export class Notabase {
         this.blockStore = {}
         this.collectionSchemaStore = {}
         this.collectionStore = {}
-
-
         // proxy > browser env + cloudflare worker
         // token > node env
 
@@ -88,11 +86,10 @@ export class Notabase {
         }
     }
 
-
     genId() {
-        return uuidv4()
+        return uuid()
     }
-    
+
     async searchBlocks(fullTableID, query) {
         let data = await this.reqeust.post(`/api/v3/searchBlocks`, {
             "query": query,
