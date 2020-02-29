@@ -8,7 +8,7 @@ import { getBlockHashId, getFullBlockId } from './utils';
 const NOTION_BASE_URL = "https://www.notion.so"
 
 
-interface NotabaseParams {
+export interface NotabaseParams {
     proxy?: {
         url: string;
         authCode: string;
@@ -29,7 +29,7 @@ export class Notabase {
     reqeust: {
         post: (path: string, data: any) => any;
     }
-    constructor(options: NotabaseParams) {
+    constructor(options?: NotabaseParams) {
         this.utils = utils
         this.blockStore = {}
         this.collectionSchemaStore = {}

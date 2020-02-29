@@ -54,7 +54,7 @@ export interface PermissionGroup {
 
 
 export interface RecordMap {
-  collection: Collection;
+  collection: ICollection;
   collection_view: CollectionView;
   block: Block;
   space: any;
@@ -143,7 +143,7 @@ export interface CollectionValue {
   }
 }
 
-export interface Collection {
+export interface ICollection {
   [key: string]: CollectionValue;
 }
 

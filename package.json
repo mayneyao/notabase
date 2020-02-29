@@ -3,6 +3,7 @@
   "version": "0.9.0",
   "description": "API Wrapper For Notion's Database",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
     "test": "jest --detectOpenHandles",
@@ -18,7 +19,6 @@
     "notion"
   ],
   "type": "module",
-  "types": "index.d.ts",
   "bugs": {
     "url": "https://github.com/mayneyao/notabase/issues"
   },
