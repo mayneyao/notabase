@@ -1,13 +1,35 @@
-const Collection = require('./collection')
-const uuidv4 = require('uuid/v4')
-const utils = require('./utils')
+import { Collection } from './collection';
+import uuidv4 from 'uuid/v4';
+import * as utils from './utils';
 
-const { getBlockHashId, getFullBlockId, getUrlPageId } = require('./utils')
+import { BlockValue } from './interface';
+import { getBlockHashId, getFullBlockId } from './utils';
 
 const NOTION_BASE_URL = "https://www.notion.so"
 
-class Notabase {
-    constructor(options = {}) {
+
+interface NotabaseParams {
+    proxy?: {
+        url: string;
+        authCode: string;
+    };
+    token?: string;
+}
+
+export class Notabase {
+    utils: any;
+    blockStore: {
+        [key: string]: { value: BlockValue }
+    };
+    collectionSchemaStore: any;
+    collectionStore: any;
+    url: string;
+    authCode: string;
+    token: string;
+    reqeust: {
+        post: (path: string, data: any) => any;
+    }
+    constructor(options: NotabaseParams) {
         this.utils = utils
         this.blockStore = {}
         this.collectionSchemaStore = {}
@@ -179,5 +201,3 @@ class Notabase {
         return dbMap
     }
 }
-
-module.exports = Notabase

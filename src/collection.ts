@@ -1,15 +1,28 @@
-const utils = require('./utils')
-class Row {
+import * as utils from './utils';
+import { Schema, IQueryCollection, CollectionValue } from './interface';
+import { Notabase } from './notabase';
 
+class Row {
+    id?: string;
 }
 
-class Collection {
-    constructor(collectionId, collectionViewId, rawData, client) {
+export class Collection {
+    collectionId: string;
+    collectionViewId: string;
+    rawData: IQueryCollection;
+    client: Notabase;
+    _schema: Schema;
+    total: number;
+    value: CollectionValue;
+    props: string[];
+    propsKeyMap: { [key: string]: { key: string } & Schema };
+    completed: boolean;
+
+    public constructor(collectionId, collectionViewId, rawData, client) {
         this.collectionId = collectionId
         this.collectionViewId = collectionViewId
         this.rawData = rawData
         this.client = client
-
         this._schema = rawData.recordMap.collection[collectionId].value.schema
         this.total = rawData.result.total
         this.value = rawData.recordMap.collection[collectionId].value
@@ -29,14 +42,14 @@ class Collection {
 
         // cache
         this.client.blockStore = { ...this.client.blockStore, ...rawData.recordMap.block }
-        this.completed = false
+        this.completed = false;
 
-        return (async () => {
-          if (this.total > 980){
-            await this.fetchMore();
-          } 
-          this.completed = true;
-          return this;
+        (async () => {
+            if (this.total > 980) {
+                await this.fetchMore();
+            }
+            this.completed = true;
+            return this;
         })()
     }
 
@@ -45,7 +58,7 @@ class Collection {
         const blockIds = data.result.blockIds.slice(980, this.total);
         const blocksDataList = await this.client.getRecordValues(blockIds, []);
         blocksDataList.forEach(item => {
-          this.client.blockStore[item.value.id] = item;
+            this.client.blockStore[item.value.id] = item;
         })
         // update blockIds
         this.rawData.result = data.result;
@@ -342,7 +355,7 @@ class Collection {
         return res
     }
 
-    makeRow(rowBlockId, schema) {
+    makeRow(rowBlockId: string, schema: Schema) {
         if (!schema) return undefined
         let rowData = rowBlockId in this.client.blockStore ? this.client.blockStore[rowBlockId].value : undefined
         let props = Object.entries(schema).map(item => {
@@ -481,5 +494,3 @@ class Collection {
         this.client.reqeust.post('/api/v3/submitTransaction', postData)
     }
 }
-
-module.exports = Collection
