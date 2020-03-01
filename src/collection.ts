@@ -67,7 +67,7 @@ export class Collection {
             return v.name
         })
 
-        Object.entries(this._schema).map(item => {
+        Object.entries(this._schema).forEach(item => {
             let [key, v] = item
             this.propsKeyMap[v.name] = {
                 key,

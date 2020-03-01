@@ -121,10 +121,12 @@ export class Notabase {
      * isbBatchUpdate 为 true 时，正式提交修改
      */
     async submit() {
-        this.reqeust.post('/api/v3/submitTransaction', {
-            // requestId: this.genId(),
-            operations: this.transactions
-        })
+        if (this.transactions.length) {
+            this.reqeust.post('/api/v3/submitTransaction', {
+                // requestId: this.genId(),
+                operations: this.transactions
+            })
+        }
         this.transactions = []
     }
 
