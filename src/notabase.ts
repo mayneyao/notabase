@@ -17,6 +17,8 @@ export interface NotabaseParams {
 }
 
 export class Notabase {
+    isBatchUpdate: boolean;
+    isFetchAll: boolean;
     utils: any;
     blockStore: {
         [key: string]: { value: BlockValue }
@@ -29,11 +31,16 @@ export class Notabase {
     reqeust: {
         post: (path: string, data: any) => any;
     }
+
+    transactions: any[];
     constructor(options?: NotabaseParams) {
+        this.isBatchUpdate = false;
+        this.isFetchAll = true;
         this.utils = utils
         this.blockStore = {}
         this.collectionSchemaStore = {}
         this.collectionStore = {}
+        this.transactions = []
         // proxy > browser env + cloudflare worker
         // token > node env
 
@@ -88,6 +95,37 @@ export class Notabase {
 
     genId() {
         return uuid()
+    }
+
+    async submitTransaction(postData) {
+        if (this.isBatchUpdate) {
+            // 25个提交为一个批次，超过 25个自动提交一次。
+            if (this.transactions.length > 100) {
+                this.submit()
+            }
+            this.transactions.push(...postData.operations)
+        } else {
+            this.reqeust.post('/api/v3/submitTransaction', postData)
+        }
+    }
+
+    startAtomic() {
+        this.isBatchUpdate = true
+    }
+
+    endAtomic() {
+        this.submit()
+        this.isBatchUpdate = false
+    }
+    /**
+     * isbBatchUpdate 为 true 时，正式提交修改
+     */
+    async submit() {
+        this.reqeust.post('/api/v3/submitTransaction', {
+            // requestId: this.genId(),
+            operations: this.transactions
+        })
+        this.transactions = []
     }
 
     async searchBlocks(fullTableID, query) {

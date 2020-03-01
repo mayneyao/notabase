@@ -44,13 +44,36 @@ export class Collection {
         this.client.blockStore = { ...this.client.blockStore, ...rawData.recordMap.block }
         this.completed = false;
 
-        (async () => {
+        // isFetchAll 默认打开，如果表格记录超过 980 条，会自动获取后面的数据。
+        if (this.client.isFetchAll) {
+            (async () => {
+                if (this.total > 980) {
+                    await this.fetchMore();
+                }
+                this.completed = true;
+                return this;
+            })()
+        } else {
+            // isFetchAll 关闭的状态，表格记录超过 980 条， 控制台给出警告。后续的调用可能会有问题。
             if (this.total > 980) {
-                await this.fetchMore();
+                console.warn("This table has more than 980 rows, but you set isFetchAll off. you can call collection.fetchMore() to get rest records")
             }
-            this.completed = true;
-            return this;
-        })()
+        }
+    }
+
+    updateSchemaProps() {
+        this.props = Object.entries(this._schema).map(item => {
+            let [key, v] = item
+            return v.name
+        })
+
+        Object.entries(this._schema).map(item => {
+            let [key, v] = item
+            this.propsKeyMap[v.name] = {
+                key,
+                ...v
+            }
+        })
     }
 
     async fetchMore() {
@@ -112,7 +135,7 @@ export class Collection {
         if (updateData) {
             postData.operations.push(updateData)
         }
-        this.client.reqeust.post('/api/v3/submitTransaction', postData)
+        this.client.submitTransaction(postData)
         this.client.blockStore[newId] = {
             value: {
                 id: newId,
@@ -405,7 +428,7 @@ export class Collection {
                                     }
                                 ]
                             }
-                            this.client.reqeust.post('/api/v3/submitTransaction', postData)
+                            this.client.submitTransaction(postData)
                         }
                         return del
                     } else {
@@ -422,7 +445,7 @@ export class Collection {
                                 { "id": target.id, "table": "block", "path": [], "command": "update", "args": { "last_edited_time": (new Date()).getTime() } }
                             ]
                         }
-                        this.client.reqeust.post('/api/v3/submitTransaction', postData)
+                        this.client.submitTransaction(postData)
                         _self = Reflect.set(target, prop, value)
                         return _self
                     } else if (["formatPageIcon", "formatPageCover", "formatPageCoverPosition"].includes(prop)) {
@@ -445,7 +468,7 @@ export class Collection {
                                 { "id": target.id, "table": "block", "path": [], "command": "update", "args": { "last_edited_time": (new Date()).getTime() } }
                             ]
                         }
-                        this.client.reqeust.post('/api/v3/submitTransaction', postData)
+                        this.client.submitTransaction(postData)
                         return
                     }
                 }
@@ -465,21 +488,10 @@ export class Collection {
         //
         let handlers = {
             get: (target, prop) => {
-                let key = this.propsKeyMap[prop].key
-                return this._schema[key]
+                const key = this.propsKeyMap[prop] && this.propsKeyMap[prop].key
+                if (key) return this._schema[key]
+                return;
             },
-            // set: (target, prop, value) => {
-            //     let key = this.propsKeyMap[prop].key
-            //     this._schema[key] = value
-
-            //     let postData = {
-            //         "operations": [
-            //             { "id": this.collectionId, "table": "collection", "path": [], "command": "update", "args": { schema: this._schema } },
-            //         ]
-            //     }
-            //     this.client.reqeust.post('/api/v3/submitTransaction', postData)
-            //     return
-            // }
         }
         let proxy = new Proxy(this._schema, handlers)
         return proxy
@@ -491,6 +503,7 @@ export class Collection {
                 { "id": this.collectionId, "table": "collection", "path": [], "command": "update", "args": { schema: this._schema } },
             ]
         }
-        this.client.reqeust.post('/api/v3/submitTransaction', postData)
+        this.updateSchemaProps()
+        this.client.submitTransaction(postData)
     }
 }
