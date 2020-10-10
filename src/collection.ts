@@ -1,15 +1,28 @@
-const utils = require('./utils')
-class Row {
+import * as utils from './utils';
+import { Schema, IQueryCollection, CollectionValue } from './interface';
+import { Notabase } from './notabase';
 
+class Row {
+    id?: string;
 }
 
-class Collection {
-    constructor(collectionId, collectionViewId, rawData, client) {
+export class Collection {
+    collectionId: string;
+    collectionViewId: string;
+    rawData: IQueryCollection;
+    client: Notabase;
+    _schema: Schema;
+    total: number;
+    value: CollectionValue;
+    props: string[];
+    propsKeyMap: { [key: string]: { key: string } & Schema };
+    completed: boolean;
+
+    public constructor(collectionId, collectionViewId, rawData, client) {
         this.collectionId = collectionId
         this.collectionViewId = collectionViewId
         this.rawData = rawData
         this.client = client
-
         this._schema = rawData.recordMap.collection[collectionId].value.schema
         this.total = rawData.result.total
         this.value = rawData.recordMap.collection[collectionId].value
@@ -29,15 +42,38 @@ class Collection {
 
         // cache
         this.client.blockStore = { ...this.client.blockStore, ...rawData.recordMap.block }
-        this.completed = false
+        this.completed = false;
 
-        return (async () => {
-          if (this.total > 980){
-            await this.fetchMore();
-          } 
-          this.completed = true;
-          return this;
-        })()
+        // isFetchAll 默认打开，如果表格记录超过 980 条，会自动获取后面的数据。
+        if (this.client.isFetchAll) {
+            (async () => {
+                if (this.total > 980) {
+                    await this.fetchMore();
+                }
+                this.completed = true;
+                return this;
+            })()
+        } else {
+            // isFetchAll 关闭的状态，表格记录超过 980 条， 控制台给出警告。后续的调用可能会有问题。
+            if (this.total > 980) {
+                console.warn("This table has more than 980 rows, but you set isFetchAll off. you can call collection.fetchMore() to get rest records")
+            }
+        }
+    }
+
+    updateSchemaProps() {
+        this.props = Object.entries(this._schema).map(item => {
+            let [key, v] = item
+            return v.name
+        })
+
+        Object.entries(this._schema).forEach(item => {
+            let [key, v] = item
+            this.propsKeyMap[v.name] = {
+                key,
+                ...v
+            }
+        })
     }
 
     async fetchMore() {
@@ -45,7 +81,7 @@ class Collection {
         const blockIds = data.result.blockIds.slice(980, this.total);
         const blocksDataList = await this.client.getRecordValues(blockIds, []);
         blocksDataList.forEach(item => {
-          this.client.blockStore[item.value.id] = item;
+            this.client.blockStore[item.value.id] = item;
         })
         // update blockIds
         this.rawData.result = data.result;
@@ -99,7 +135,7 @@ class Collection {
         if (updateData) {
             postData.operations.push(updateData)
         }
-        this.client.reqeust.post('/api/v3/submitTransaction', postData)
+        this.client.submitTransaction(postData)
         this.client.blockStore[newId] = {
             value: {
                 id: newId,
@@ -342,7 +378,7 @@ class Collection {
         return res
     }
 
-    makeRow(rowBlockId, schema) {
+    makeRow(rowBlockId: string, schema: Schema) {
         if (!schema) return undefined
         let rowData = rowBlockId in this.client.blockStore ? this.client.blockStore[rowBlockId].value : undefined
         let props = Object.entries(schema).map(item => {
@@ -392,7 +428,7 @@ class Collection {
                                     }
                                 ]
                             }
-                            this.client.reqeust.post('/api/v3/submitTransaction', postData)
+                            this.client.submitTransaction(postData)
                         }
                         return del
                     } else {
@@ -409,7 +445,7 @@ class Collection {
                                 { "id": target.id, "table": "block", "path": [], "command": "update", "args": { "last_edited_time": (new Date()).getTime() } }
                             ]
                         }
-                        this.client.reqeust.post('/api/v3/submitTransaction', postData)
+                        this.client.submitTransaction(postData)
                         _self = Reflect.set(target, prop, value)
                         return _self
                     } else if (["formatPageIcon", "formatPageCover", "formatPageCoverPosition"].includes(prop)) {
@@ -432,7 +468,7 @@ class Collection {
                                 { "id": target.id, "table": "block", "path": [], "command": "update", "args": { "last_edited_time": (new Date()).getTime() } }
                             ]
                         }
-                        this.client.reqeust.post('/api/v3/submitTransaction', postData)
+                        this.client.submitTransaction(postData)
                         return
                     }
                 }
@@ -452,21 +488,10 @@ class Collection {
         //
         let handlers = {
             get: (target, prop) => {
-                let key = this.propsKeyMap[prop].key
-                return this._schema[key]
+                const key = this.propsKeyMap[prop] && this.propsKeyMap[prop].key
+                if (key) return this._schema[key]
+                return;
             },
-            // set: (target, prop, value) => {
-            //     let key = this.propsKeyMap[prop].key
-            //     this._schema[key] = value
-
-            //     let postData = {
-            //         "operations": [
-            //             { "id": this.collectionId, "table": "collection", "path": [], "command": "update", "args": { schema: this._schema } },
-            //         ]
-            //     }
-            //     this.client.reqeust.post('/api/v3/submitTransaction', postData)
-            //     return
-            // }
         }
         let proxy = new Proxy(this._schema, handlers)
         return proxy
@@ -478,8 +503,7 @@ class Collection {
                 { "id": this.collectionId, "table": "collection", "path": [], "command": "update", "args": { schema: this._schema } },
             ]
         }
-        this.client.reqeust.post('/api/v3/submitTransaction', postData)
+        this.updateSchemaProps()
+        this.client.submitTransaction(postData)
     }
 }
-
-module.exports = Collection

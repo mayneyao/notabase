@@ -1,23 +1,51 @@
-const Collection = require('./collection')
-const uuidv4 = require('uuid/v4')
-const utils = require('./utils')
+import { Collection } from './collection';
+import { v4 as uuid } from 'uuid';
+import * as utils from './utils';
 
-const { getBlockHashId, getFullBlockId, getUrlPageId } = require('./utils')
+import { BlockValue } from './interface';
+import { getBlockHashId, getFullBlockId } from './utils';
 
 const NOTION_BASE_URL = "https://www.notion.so"
 
-class Notabase {
-    constructor(options = {}) {
+
+export interface NotabaseParams {
+    proxy?: {
+        url: string;
+        authCode: string;
+    };
+    token?: string;
+}
+
+export class Notabase {
+    isBatchUpdate: boolean;
+    isFetchAll: boolean;
+    utils: any;
+    blockStore: {
+        [key: string]: { value: BlockValue }
+    };
+    collectionSchemaStore: any;
+    collectionStore: any;
+    private url: string;
+    private authCode: string;
+    private token: string;
+    reqeust: {
+        post: (path: string, data: any) => any;
+    }
+
+    transactions: any[];
+    constructor(options?: NotabaseParams) {
+        this.isBatchUpdate = false;
+        this.isFetchAll = true;
         this.utils = utils
         this.blockStore = {}
         this.collectionSchemaStore = {}
         this.collectionStore = {}
-        const { proxy, token } = options
+        this.transactions = []
         // proxy > browser env + cloudflare worker
         // token > node env
 
-        if (proxy) {
-            const { url, authCode } = proxy
+        if (options && options.proxy) {
+            const { url, authCode } = options.proxy
             // browser env
             this.url = url // cloudflare worker url
             // auth code for cloudflare worker (nobody knows but you ,same to the code that config in cf-worker)
@@ -37,6 +65,7 @@ class Notabase {
             }
         } else {
             // token node env 
+            const token = options && options.token;
             this.token = token
             let tkHeader = token ? { 'cookie': `token_v2=${token}` } : {}
             const fetch = require("node-fetch")
@@ -64,10 +93,43 @@ class Notabase {
         }
     }
 
-
     genId() {
-        return uuidv4()
+        return uuid()
     }
+
+    async submitTransaction(postData) {
+        if (this.isBatchUpdate) {
+            // 25个提交为一个批次，超过 25个自动提交一次。
+            if (this.transactions.length > 100) {
+                this.submit()
+            }
+            this.transactions.push(...postData.operations)
+        } else {
+            this.reqeust.post('/api/v3/submitTransaction', postData)
+        }
+    }
+
+    startAtomic() {
+        this.isBatchUpdate = true
+    }
+
+    endAtomic() {
+        this.submit()
+        this.isBatchUpdate = false
+    }
+    /**
+     * isbBatchUpdate 为 true 时，正式提交修改
+     */
+    async submit() {
+        if (this.transactions.length) {
+            this.reqeust.post('/api/v3/submitTransaction', {
+                // requestId: this.genId(),
+                operations: this.transactions
+            })
+        }
+        this.transactions = []
+    }
+
     async searchBlocks(fullTableID, query) {
         let data = await this.reqeust.post(`/api/v3/searchBlocks`, {
             "query": query,
@@ -179,5 +241,3 @@ class Notabase {
         return dbMap
     }
 }
-
-module.exports = Notabase

@@ -1,14 +1,17 @@
-const NOTION_BASE_URL = "https://www.notion.so"
+import { parse } from "url";
 
+export const NOTION_BASE_URL = "https://www.notion.so";
 
-const isPageId = (text) => {
+export const isPageId = (text) => {
     let re = new RegExp('^[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}$')
     return text.length === 36 && re.test(text)
 }
-const getBlockHashId = (blockId) => {
+
+export const getBlockHashId = (blockId) => {
     return blockId.split('-').join('')
 }
-const getFullBlockId = (blockId) => {
+
+export const getFullBlockId = (blockId) => {
     if (blockId.match("^[a-zA-Z0-9]+$")) {
         return blockId.substr(0, 8) + "-"
             + blockId.substr(8, 4) + "-"
@@ -19,22 +22,16 @@ const getFullBlockId = (blockId) => {
         return blockId
     }
 }
-const getBrowseableUrl = (blockID) => {
+export const getBrowseableUrl = (blockID) => {
     return `${NOTION_BASE_URL}/${blockID.split('-').join('')}`
 }
-const getUrlPageId = (url) => {
-    let pUrl
-    if (!process.browser) {
-        const parse = require('url').parse
-        pUrl = parse(url)
-    } else {
-        pUrl = new URL(url)
-    }
+export const getUrlPageId = (url) => {
+    const pUrl = parse(url)
     let pathList = pUrl.pathname.split('/')
     let pagId = pathList[pathList.length - 1]
     return pagId
 }
-const parseImageUrl = (url, width) => {
+export const parseImageUrl = (url, width) => {
     let rUrl
     if (url.startsWith("https://s3")) {
         let [parsedOriginUrl] = url.split("?")
@@ -51,22 +48,20 @@ const parseImageUrl = (url, width) => {
         return rUrl
     }
 }
-const formatDate = (date) => {
+export const formatDate = (date) => {
     return `${date.getFullYear()}-${(date.getMonth() + 1 + "").padStart(2, "0")}-${(date.getDate() + "").padStart(2, "0")}`
 }
-const formatTime = (date) => {
+export const formatTime = (date) => {
     return `${(date.getHours() + "").padStart(2, "0")}:${(date.getMinutes() + "").padStart(2, "0")}`
 }
-const fixTimeZone = (dateAsString, timeZone) => {
+export const fixTimeZone = (dateAsString, timeZone) => {
     const shortTz = new Date().
         toLocaleString("en", { timeZoneName: "short", timeZone }).
         split(' ').
         pop()
     return new Date(dateAsString + " " + shortTz);
 }
-const unFixTimeZone = (date, timeZone) => {
+export const unFixTimeZone = (date, timeZone) => {
     const adjustedTime = date.toLocaleString("en-US", { timeZone });
     return new Date(adjustedTime);
 }
-
-module.exports = { isPageId, getBlockHashId, getFullBlockId, getBrowseableUrl, getUrlPageId, parseImageUrl, formatDate, formatTime, fixTimeZone, unFixTimeZone }
