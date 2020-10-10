@@ -1,6 +1,6 @@
 {
   "name": "notabase",
-  "version": "0.9.4",
+  "version": "0.9.5",
   "description": "API Wrapper For Notion's Database",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -18,7 +18,6 @@
   "keywords": [
     "notion"
   ],
-  "type": "module",
   "bugs": {
     "url": "https://github.com/mayneyao/notabase/issues"
   },
