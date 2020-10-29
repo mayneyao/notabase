@@ -1,3 +1,7 @@
+⚠️ Notion API 变动、不建议使用此项目。等官方 API 开放
+
+⚠️ DO NOT use this
+
 # Notabase (WIP)
 API Wrapper For Notion's Database
 
