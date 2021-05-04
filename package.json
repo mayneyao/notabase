@@ -1,6 +1,6 @@
 {
   "name": "notabase",
-  "version": "0.9.5",
+  "version": "0.9.8",
   "description": "API Wrapper For Notion's Database",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -23,13 +23,14 @@
   },
   "homepage": "https://github.com/mayneyao/notabase#readme",
   "dependencies": {
-    "@types/node": "^13.7.6",
     "axios": "^0.19.0",
     "dayjs": "^1.8.15",
     "node-fetch": "^2.6.0",
-    "uuid": "^3.3.3"
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
+    "@types/uuid": "^8",
+    "@types/node": "^15.0.1",
     "jest": "^24.9.0",
     "typescript": "^3.8.2"
   }

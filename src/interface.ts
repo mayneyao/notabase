@@ -94,6 +94,8 @@ export enum FieldType {
   relation = 'relation',
   title = 'title',
   person = 'person',
+  number = 'number',
+  rollup = 'rollup',
 }
 
 
@@ -130,13 +132,13 @@ export interface CollectionSchema {
 
 
 export interface CollectionValue {
-  role: string;
+  role?: string;
   value: {
     id: string;
     version: number;// 对应快照，notion 的版本控制粒度更细，在 Record 级别控制
     type: "table";
     name: any[]; // FIXME: 这里不确定
-    scheme: CollectionSchema;
+    schema: CollectionSchema;
     parent_id: string;
     parent_table: 'block';
     alive: boolean;
@@ -149,7 +151,7 @@ export interface ICollection {
 
 export interface CollectionView {
   [key: string]: {
-    role: string;
+    role?: string;
     value: {
       id: string;
       version: number;
@@ -171,4 +173,18 @@ export interface Block {
     role: string;
     value: BlockValue;
   }
+}
+
+// Notabase 对外提供的 Row
+export interface CollectionRow {
+  _raw: BlockValue;
+  [key: string]: any;
+}
+
+export interface NotabaseParams {
+  proxy?: {
+    url: string;
+    authCode: string;
+  };
+  token?: string;
 }
